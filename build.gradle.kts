@@ -5,7 +5,7 @@ plugins {
 	jacoco
 }
 
-group = "id.ac.ui.cs.advprog.snackventure"
+group = "id.ac.ui.cs.advprog.hoomgroom"
 version = "0.0.1-SNAPSHOT"
 
 java {
