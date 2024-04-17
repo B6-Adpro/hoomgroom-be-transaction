@@ -11,6 +11,6 @@ ENV JDBC_DATABASE_USERNAME ${JDBC_DATABASE_USERNAME}
 
 WORKDIR /app
 RUN ls -al
-COPY ./build/libs/transaction-0.0.1-SNAPSHOT.jar /app
+COPY ./hoomgroom-be-transaction-0.0.1-SNAPSHOT.jar /app
 EXPOSE 8080
-CMD ["java","-jar","transaction-0.0.1-SNAPSHOT.jar"]
+CMD ["java","-jar","hoomgroom-be-transaction-0.0.1-SNAPSHOT.jar"]
