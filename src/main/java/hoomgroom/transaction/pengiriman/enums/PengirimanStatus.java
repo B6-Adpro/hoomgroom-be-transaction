@@ -7,7 +7,8 @@ public enum PengirimanStatus {
     DALAM_PROSES("DALAM_PROSES"),
     SEDANG_DIKEMAS("SEDANG_DIKEMAS"),
     SEDANG_DIKIRIM("SEDANG_DIKIRIM"),
-    TELAH_TIBA("TELAH_TIBA");
+    TELAH_TIBA("TELAH_TIBA"),
+    DITERIMA("DITERIMA");
 
     private final String value;
 
