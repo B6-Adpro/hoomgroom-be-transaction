@@ -1,7 +1,7 @@
-package hoomgroom.transaction.service;
+package hoomgroom.transaction.pengiriman.service;
 
-import hoomgroom.transaction.model.Pengiriman;
-import hoomgroom.transaction.repository.PengirimanRepository;
+import hoomgroom.transaction.pengiriman.model.Pengiriman;
+import hoomgroom.transaction.pengiriman.repository.PengirimanRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

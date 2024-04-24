@@ -1,4 +1,4 @@
-package hoomgroom.transaction.controller;
+package hoomgroom.transaction.pengiriman.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

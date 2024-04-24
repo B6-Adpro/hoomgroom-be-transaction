@@ -1,6 +1,6 @@
-package hoomgroom.transaction.service;
+package hoomgroom.transaction.pengiriman.service;
 
-import hoomgroom.transaction.model.Pengiriman;
+import hoomgroom.transaction.pengiriman.model.Pengiriman;
 
 import java.util.List;
 

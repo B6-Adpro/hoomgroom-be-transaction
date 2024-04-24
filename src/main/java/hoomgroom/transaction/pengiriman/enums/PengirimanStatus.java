@@ -1,4 +1,4 @@
-package hoomgroom.transaction.enums;
+package hoomgroom.transaction.pengiriman.enums;
 
 import lombok.Getter;
 

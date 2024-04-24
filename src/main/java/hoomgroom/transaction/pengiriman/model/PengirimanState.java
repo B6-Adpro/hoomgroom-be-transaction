@@ -1,4 +1,4 @@
-package hoomgroom.transaction.model;
+package hoomgroom.transaction.pengiriman.model;
 
 abstract class PengirimanState {
     protected Pengiriman pengiriman;

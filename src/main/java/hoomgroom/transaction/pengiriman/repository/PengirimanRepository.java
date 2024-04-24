@@ -1,6 +1,6 @@
-package hoomgroom.transaction.repository;
+package hoomgroom.transaction.pengiriman.repository;
 
-import hoomgroom.transaction.model.Pengiriman;
+import hoomgroom.transaction.pengiriman.model.Pengiriman;
 
 import org.springframework.stereotype.Repository;
 

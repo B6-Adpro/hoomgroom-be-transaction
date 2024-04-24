@@ -1,4 +1,4 @@
-package hoomgroom.transaction.model;
+package hoomgroom.transaction.pengiriman.model;
 
 
 import lombok.Getter;
