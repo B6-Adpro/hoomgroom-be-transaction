@@ -2,9 +2,13 @@ package hoomgroom.transaction.Wallet.service;
 
 import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
+import lombok.Getter;
+import lombok.Setter;
 
 public class WalletServiceCreditCard implements WalletService{
-    private int cardNumber;
+    @Getter
+    @Setter
+    private String cardNumber;
     private final WalletRepository walletRepository = new WalletRepository();
 
     @Override
@@ -23,7 +27,4 @@ public class WalletServiceCreditCard implements WalletService{
         wallet.setBalance(wallet.getBalance() + amount);
     }
 
-    public void setCardNumber(int cardNumber) {
-        this.cardNumber = cardNumber;
-    }
 }

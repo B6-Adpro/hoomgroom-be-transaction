@@ -2,9 +2,13 @@ package hoomgroom.transaction.Wallet.service;
 
 import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
+import lombok.Getter;
+import lombok.Setter;
 
 public class WalletServiceEWallet implements WalletService{
-    private int phoneNumber;
+    @Getter
+    @Setter
+    private String phoneNumber;
     private final WalletRepository walletRepository = new WalletRepository();
 
     @Override
@@ -24,7 +28,4 @@ public class WalletServiceEWallet implements WalletService{
         wallet.setBalance(wallet.getBalance() + amount);
     }
 
-    public void setPhoneNumber(int phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
 }
