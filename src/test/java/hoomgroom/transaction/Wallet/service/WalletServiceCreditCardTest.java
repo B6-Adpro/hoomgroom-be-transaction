@@ -75,7 +75,7 @@ public class WalletServiceCreditCardTest {
 
     @Test
     void testInvalidCreditCardNumberLength() {
-        String cardNumber = "4539704384706391";
+        String cardNumber = "45391";
         walletService.setCardNumber(cardNumber);
         assertEquals(walletService.getCardNumber(), cardNumber);
         assertFalse(walletService.validateCardNumber(cardNumber));
