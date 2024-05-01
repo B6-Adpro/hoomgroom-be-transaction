@@ -1,26 +1,38 @@
 package hoomgroom.transaction.pengiriman.model;
 
 
+import jakarta.persistence.*;
+import java.util.UUID;
+
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
 
-@Getter @Setter
+@Getter @Setter @Entity @NoArgsConstructor @Table(name = "Pengiriman")
 public class Pengiriman {
-    private String pengirimanId;
-    private String alamatPengiriman;
-    private String penerimaPengiriman;
-    private String pengirimanState;
-    private State state;
-    private String furniturePengiriman;
+    @Column(name = "id_transaksi")
+    String transaksiId;
 
-    public Pengiriman(String pengirimanId, String alamatPengiriman, String penerimaPengiriman, String furniturePengiriman) {
-        this.pengirimanId = pengirimanId;
+    @Id @Column(name = "id_pengiriman")
+    String pengirimanId;
+
+    @Column(name = "alamat_pengiriman")
+    String alamatPengiriman;
+
+    @Column(name = "state")
+    String state;
+
+    @Column(name = "furniture_pengiriman")
+    String furniturePengiriman;
+
+    public Pengiriman(String pengirimanId, String alamatPengiriman, String penerimaPengiriman, String furniturePengiriman, String transaksi) {
+        this.pengirimanId = UUID.randomUUID().toString();
+        this.transaksiId = transaksi;
         this.alamatPengiriman = alamatPengiriman;
-        this.penerimaPengiriman = penerimaPengiriman;
         this.furniturePengiriman = furniturePengiriman;
-        this.pengirimanState = PengirimanStatus.DALAM_PROSES.getValue();
+        this.state = PengirimanStatus.DALAM_PROSES.getValue();
 
         if (furniturePengiriman.isBlank()) {
             throw new IllegalArgumentException();
@@ -28,17 +40,4 @@ public class Pengiriman {
             this.furniturePengiriman = furniturePengiriman;
         }
     }    
-
-    public void setStatus(String status) {
-        if (pengirimanState.contains(status)) {
-            this.pengirimanState = status;
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    public void changeStatus (State state) {
-        this.state = state;
-    }
-
 }
