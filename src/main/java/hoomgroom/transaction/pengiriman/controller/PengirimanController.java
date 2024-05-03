@@ -1,37 +1,31 @@
 package hoomgroom.transaction.pengiriman.controller;
 
+import java.util.HashMap;
 import java.util.List;
 
+import hoomgroom.transaction.pengiriman.dto.PengirimanRequest;
+import hoomgroom.transaction.pengiriman.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 import hoomgroom.transaction.pengiriman.service.PengirimanService;
 
-@Controller
-@RequestMapping("/pengiriman")
+@RestController
 public class PengirimanController {
 
     @Autowired
+    private AdminService service;
+    @Autowired
     private PengirimanService pengirimanService;
 
-    // @PostMapping("/create")
-    // public ResponseEntity<Order> createPengiriman(@RequestBody OrderRequest orderRequest) {
-    //     Pengiriman response = pengirimanService.create();
-    //     return ResponseEntity.ok(response);
-    // }
-
-    @GetMapping("/listpengiriman")
-    public String pengirimanListPage(Model model){
-        List<Pengiriman> allPengiriman = pengirimanService.findAll();
-        model.addAttribute("pengiriman", allPengiriman);
-        return "pengirimanList";
+    @RequestMapping(value = "/pengiriman/create", method = RequestMethod.POST)
+    public ResponseEntity<String> createPengiriman(@RequestBody PengirimanRequest pengirimanRequest) {
+        return service.createPengiriman(pengirimanRequest);
     }
 }
