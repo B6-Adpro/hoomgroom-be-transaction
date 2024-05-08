@@ -1,8 +1,9 @@
 package hoomgroom.transaction.pengiriman.model;
 
 import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
-import hoomgroom.transaction.pengiriman.service.State.PengirimanState;
-import hoomgroom.transaction.pengiriman.service.State.ProcessingState;
+import hoomgroom.transaction.pengiriman.service.state.PengirimanState;
+import hoomgroom.transaction.pengiriman.service.state.ProcessingState;
+import hoomgroom.transaction.pengiriman.service.state.PengirimanState;
 import jakarta.persistence.*;
 import java.util.UUID;
 
@@ -35,4 +36,14 @@ public class Pengiriman {
 
     @Column(name = "furniture_pengiriman")
     String furniturePengiriman;
+
+
+
+    public void setState(PengirimanState state) {
+        this.state = state;
+    }
+
+    public void pengirimanInfo() {
+        state.pengirimanInfo();
+    }
 }
