@@ -5,29 +5,14 @@ import hoomgroom.transaction.Wallet.repository.WalletRepository;
 import lombok.Getter;
 import lombok.Setter;
 
-public class WalletServiceCreditCard implements WalletService{
+public class TopUpByCreditCard implements TopUpStrategy {
     @Getter
     @Setter
     private String cardNumber;
+
     private final WalletRepository walletRepository = new WalletRepository();
 
-    @Override
-    public void add(Wallet wallet) {
-        walletRepository.addWallet(wallet);
-    }
-    @Override
-    public Wallet getWalletById(String walletId) {
-        Wallet wallet = walletRepository.findById(walletId);
-        return wallet;
-    }
-
-    @Override
-    public void topUp(String walletId, double amount) {
-        Wallet wallet = walletRepository.findById(walletId);
-        wallet.setBalance(wallet.getBalance() + amount);
-    }
-
-    public Boolean validateCardNumber(String cardNumber) {
+    public boolean validateTopUpDetails() {
         // Check if cardNumberStr is not null and contains only digits
         if (cardNumber == null || !cardNumber.matches("\\d+")) {
             return false;
@@ -53,5 +38,10 @@ public class WalletServiceCreditCard implements WalletService{
             alternate = !alternate;
         }
         return (sum % 10 == 0);
+    }
+
+    public void topUp(String walletId, double amount) {
+        Wallet wallet = walletRepository.findById(walletId);
+        wallet.setBalance(wallet.getBalance() + amount);
     }
 }
