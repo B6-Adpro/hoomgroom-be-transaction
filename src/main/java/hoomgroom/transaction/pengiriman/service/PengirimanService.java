@@ -1,5 +1,6 @@
 package hoomgroom.transaction.pengiriman.service;
 
+import hoomgroom.transaction.pengiriman.dto.PengirimanData;
 import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 
@@ -23,5 +24,21 @@ public class PengirimanService {
                 .stateString(pengiriman.getStateString())
                 .build();
         return pengirimanRepository.save(newPengiriman);
+    }
+
+    public List<PengirimanData> getAllPengiriman() {
+        List<Pengiriman> pengirimanList = pengirimanRepository.findAll();
+        return pengirimanList.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private PengirimanData convertToDto(Pengiriman pengiriman) {
+        PengirimanData pengirimanDTO = new PengirimanData();
+        pengirimanDTO.setTransaksiId(pengiriman.getTransaksiId());
+        pengirimanDTO.setAlamat(pengiriman.getAlamatPengiriman());
+        pengirimanDTO.setFurniture(pengiriman.getFurniturePengiriman());
+        pengirimanDTO.setStateString(pengiriman.getStateString());
+        return pengirimanDTO;
     }
 }
