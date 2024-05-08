@@ -2,8 +2,8 @@ package hoomgroom.transaction.pengiriman.model;
 
 import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
 
-import hoomgroom.transaction.pengiriman.service.state.PengirimanState;
-import hoomgroom.transaction.pengiriman.service.state.ProcessingState;
+import hoomgroom.transaction.pengiriman.service.State.PengirimanState;
+import hoomgroom.transaction.pengiriman.service.State.ProcessingState;
 import jakarta.persistence.*;
 
 import lombok.*;

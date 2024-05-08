@@ -1,4 +1,4 @@
-package hoomgroom.transaction.pengiriman.service.state;
+package hoomgroom.transaction.pengiriman.service.State;
 
 public class ArrivedState implements PengirimanState {
     @Override
