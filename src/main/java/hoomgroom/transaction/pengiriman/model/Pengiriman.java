@@ -11,42 +11,32 @@ import lombok.*;
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor
-@Table(name = "Pengiriman")
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "Pengiriman")
 public class Pengiriman {
     @Column(name = "id_transaksi")
     String transaksiId;
 
-    @Id @Column(name = "id_pengiriman")
-    String pengirimanId;
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @Column(name = "id_pengiriman",updatable = false, nullable = false)
+    Long pengirimanId;
 
     @Column(name = "alamat_pengiriman")
     String alamatPengiriman;
 
-    PengirimanState state;
+    @Transient
+    PengirimanState state = new ProcessingState();
 
     @Column(name = "state")
-    String stateString;
+    String stateString = PengirimanStatus.DALAM_PROSES.getValue();;
 
     @Column(name = "furniture_pengiriman")
     String furniturePengiriman;
 
-    public Pengiriman( String transaksi, String alamatPengiriman, String furniturePengiriman) {
-        this.pengirimanId = UUID.randomUUID().toString();
-        this.transaksiId = transaksi;
-        this.alamatPengiriman = alamatPengiriman;
-        this.furniturePengiriman = furniturePengiriman;
-        setState(new ProcessingState()); //Untuk state design pattern
-        this.stateString = PengirimanStatus.DALAM_PROSES.getValue(); //Untuk dimasukan ke database dalam bentu string
 
-
-        if (furniturePengiriman.isBlank()) {
-            throw new IllegalArgumentException();
-        } else {
-            this.furniturePengiriman = furniturePengiriman;
-        }
-    }
 
     public void setState(PengirimanState state) {
         this.state = state;

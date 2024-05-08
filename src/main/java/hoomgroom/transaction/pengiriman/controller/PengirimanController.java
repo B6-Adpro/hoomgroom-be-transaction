@@ -3,9 +3,10 @@ package hoomgroom.transaction.pengiriman.controller;
 import java.util.HashMap;
 import java.util.List;
 
-import hoomgroom.transaction.pengiriman.dto.PengirimanRequest;
+import hoomgroom.transaction.pengiriman.dto.PengirimanData;
 import hoomgroom.transaction.pengiriman.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,8 +25,22 @@ public class PengirimanController {
     @Autowired
     private PengirimanService pengirimanService;
 
-    @RequestMapping(value = "/pengiriman/create", method = RequestMethod.POST)
-    public ResponseEntity<String> createPengiriman(@RequestBody PengirimanRequest pengirimanRequest) {
-        return service.createPengiriman(pengirimanRequest);
+    @RequestMapping(value = "/pengiriman/view", method = RequestMethod.GET)
+    public List<PengirimanData> getAllPengiriman() {
+        return pengirimanService.getAllPengiriman();
     }
+    @RequestMapping(value = "/pengiriman/create", method = RequestMethod.POST)
+    public ResponseEntity createPengiriman(@RequestBody Pengiriman pengiriman) {
+        ResponseEntity responseEntity = null;
+        try {
+            pengirimanService.createPengiriman(pengiriman);
+            responseEntity = ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println("Error!");
+            responseEntity = ResponseEntity.badRequest().body(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return responseEntity;
+    }
+
 }
