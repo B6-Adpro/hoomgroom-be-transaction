@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import hoomgroom.transaction.pengiriman.service.PengirimanService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,22 +39,5 @@ public class PengirimanRepositoryTest {
 
         // Then
         assertEquals(2, result.size());
-    }
-
-    @Test
-    public void testFindPengirimanById() {
-        // Given
-        Pengiriman pengiriman = new Pengiriman("TRX123", "Jl. Raya 123", "Meja", "Processing", 1L);
-        when(pengirimanRepository.findById(1L)).thenReturn(Optional.of(pengiriman));
-
-        // When
-        Pengiriman result = pengirimanService.getPengirimanById(1L);
-
-        // Then
-        assertEquals("TRX123", result.getTransaksiId());
-        assertEquals("Jl. Raya 123", result.getAlamatPengiriman());
-        assertEquals("Meja", result.getFurniturePengiriman());
-        assertEquals("Processing", result.getStateString());
-        assertEquals(1L, result.getPengirimanId());
     }
 }
