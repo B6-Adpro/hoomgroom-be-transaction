@@ -1,11 +1,10 @@
 package hoomgroom.transaction.pengiriman.model;
 
 import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
+
 import hoomgroom.transaction.pengiriman.service.state.PengirimanState;
 import hoomgroom.transaction.pengiriman.service.state.ProcessingState;
-import hoomgroom.transaction.pengiriman.service.state.PengirimanState;
 import jakarta.persistence.*;
-import java.util.UUID;
 
 import lombok.*;
 
@@ -28,16 +27,29 @@ public class Pengiriman {
     @Column(name = "alamat_pengiriman")
     String alamatPengiriman;
 
-    @Transient
+    @Transient @Builder.Default
     PengirimanState state = new ProcessingState();
 
-    @Column(name = "state")
-    String stateString = PengirimanStatus.DALAM_PROSES.getValue();;
+    @Column(name = "state") @Builder.Default
+    String stateString = PengirimanStatus.DALAM_PROSES.getValue();
 
     @Column(name = "furniture_pengiriman")
     String furniturePengiriman;
 
+    public Pengiriman( String transaksi, String alamatPengiriman, String furniturePengiriman) {
+        this.transaksiId = transaksi;
+        this.alamatPengiriman = alamatPengiriman;
+        this.furniturePengiriman = furniturePengiriman;
+        setState(new ProcessingState()); //Untuk state design pattern
+        this.stateString = PengirimanStatus.DALAM_PROSES.getValue(); //Untuk dimasukan ke database dalam bentu string
 
+
+        if (furniturePengiriman.isBlank()) {
+            throw new IllegalArgumentException();
+        } else {
+            this.furniturePengiriman = furniturePengiriman;
+        }
+    }
 
     public void setState(PengirimanState state) {
         this.state = state;
