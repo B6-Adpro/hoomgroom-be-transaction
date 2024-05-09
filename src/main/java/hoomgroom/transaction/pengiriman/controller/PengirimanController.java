@@ -23,6 +23,19 @@ public class PengirimanController {
     public List<PengirimanData> getAllPengiriman() {
         return pengirimanService.getAllPengiriman();
     }
+
+    @RequestMapping(value = "/pengiriman/{id}", method = RequestMethod.GET)
+    public ResponseEntity getPengirimanById(@PathVariable long id) {
+        ResponseEntity responseEntity = null;
+        try {
+            pengirimanService.getPengirimanById(id);
+            responseEntity = ResponseEntity.ok().body(pengirimanService.getPengirimanById(id));
+        } catch (Exception e) {
+            responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
+    }
+
     @RequestMapping(value = "/pengiriman/create", method = RequestMethod.POST)
     public ResponseEntity createPengiriman(@RequestBody Pengiriman pengiriman) {
         ResponseEntity responseEntity = null;
@@ -33,7 +46,6 @@ public class PengirimanController {
             System.out.println("Error!");
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return responseEntity;
     }
 
