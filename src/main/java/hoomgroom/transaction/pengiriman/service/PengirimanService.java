@@ -34,6 +34,11 @@ public class PengirimanService {
                 .collect(Collectors.toList());
     }
 
+    public Optional<PengirimanData> getPengirimanById(Long id) {
+        Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
+        return pengirimanOptional.map(this::convertToDto);
+    }
+
     private PengirimanData convertToDto(Pengiriman pengiriman) {
         PengirimanData pengirimanDTO = new PengirimanData();
         pengirimanDTO.setId(pengiriman.getPengirimanId().toString());
