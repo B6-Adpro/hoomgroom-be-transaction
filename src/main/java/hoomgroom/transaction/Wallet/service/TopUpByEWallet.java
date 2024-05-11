@@ -4,14 +4,23 @@ import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
+@Service
 public class TopUpByEWallet implements TopUpStrategy {
     @Getter
     @Setter
     private String phoneNumber;
-    private final WalletRepository walletRepository = new WalletRepository();
+    private final WalletRepository walletRepository;
+
+    @Autowired
+    public TopUpByEWallet(WalletRepository walletRepository) {
+        this.walletRepository = walletRepository;
+    }
 
     public boolean validateTopUpDetails() {
         //According to the international phone numbering plan (ITU-T E. 164), phone numbers cannot contain more than 15 digits.
@@ -22,7 +31,11 @@ public class TopUpByEWallet implements TopUpStrategy {
         return phoneNumber != null && pattern.matcher(phoneNumber).matches();
     }
     public void topUp(String walletId, double amount) {
-        Wallet wallet = walletRepository.findById(walletId);
-        wallet.setBalance(wallet.getBalance() + amount);
+        Optional<Wallet> found = walletRepository.findById(walletId);
+        if (found.isPresent()) {
+            Wallet wallet = found.get();
+            wallet.setBalance(wallet.getBalance() + amount);
+            walletRepository.save(wallet);
+        }
     }
 }

@@ -4,13 +4,22 @@ import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
+@Service
 public class TopUpByCreditCard implements TopUpStrategy {
     @Getter
     @Setter
     private String cardNumber;
+    private final WalletRepository walletRepository;
 
-    private final WalletRepository walletRepository = new WalletRepository();
+    @Autowired
+    public TopUpByCreditCard(WalletRepository walletRepository) {
+        this.walletRepository = walletRepository;
+    }
 
     public boolean validateTopUpDetails() {
         // Check if cardNumberStr is not null and contains only digits
@@ -41,7 +50,11 @@ public class TopUpByCreditCard implements TopUpStrategy {
     }
 
     public void topUp(String walletId, double amount) {
-        Wallet wallet = walletRepository.findById(walletId);
-        wallet.setBalance(wallet.getBalance() + amount);
+        Optional<Wallet> found = walletRepository.findById(walletId);
+        if (found.isPresent()) {
+            Wallet wallet = found.get();
+            wallet.setBalance(wallet.getBalance() + amount);
+            walletRepository.save(wallet);
+        }
     }
 }
