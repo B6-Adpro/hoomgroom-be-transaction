@@ -4,18 +4,25 @@ import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TopUpByCreditCardTest {
     @Mock
     private WalletRepository walletRepository;
+
+    @Captor
+    private ArgumentCaptor<Wallet> walletCaptor;
 
     @InjectMocks
     TopUpByCreditCard strategy;
@@ -29,21 +36,44 @@ public class TopUpByCreditCardTest {
     }
 
     @Test
-    void testTopUp() {
-        // Mock wallet object
+    void testInvalidCardNumber() {
+        String invalidCardNumber = "1234567890123456"; // 15 digits, invalid according to Luhn's algorithm
+        strategy.setCardNumber(invalidCardNumber);
+        assertEquals(invalidCardNumber, strategy.getCardNumber());
+        assertFalse(strategy.validateTopUpDetails());
+    }
+
+    @Test
+    void testNullCardNumber() {
+        strategy.setCardNumber(null);
+        assertNull(strategy.getCardNumber());
+        assertFalse(strategy.validateTopUpDetails());
+    }
+
+    @Test
+    void testTopUpMinimumBalance() {
         Wallet wallet = new Wallet();
         wallet.setWalletId("eb558e9f-1c39-460e-8860-71af6af63bd6");
-        wallet.setBalance(50000);
+        wallet.setBalance(0); // Edge case: Minimum balance
+        when(walletRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6")).thenReturn(Optional.of(wallet));
 
-        // Stub behavior of findById in walletRepository
-        when(walletRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6")).thenReturn(wallet);
+        strategy.topUp("eb558e9f-1c39-460e-8860-71af6af63bd6", 100);
 
-        // Initialize strategy with the mocked walletRepository
-        strategy = new TopUpByCreditCard(walletRepository);
-
-        // Perform top-up
-        strategy.topUp("eb558e9f-1c39-460e-8860-71af6af63bd6", 50000);
-        // Assert balance after top-up
-        assertEquals(100000, wallet.getBalance());
+        verify(walletRepository).save(walletCaptor.capture());
+        assertEquals(100, wallet.getBalance());
     }
+
+    @Test
+    void testTopUpMaximumBalance() {
+        Wallet wallet = new Wallet();
+        wallet.setWalletId("eb558e9f-1c39-460e-8860-71af6af63bd6");
+        wallet.setBalance(Double.MAX_VALUE); // Edge case: Maximum balance
+        when(walletRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6")).thenReturn(Optional.of(wallet));
+
+        strategy.topUp("eb558e9f-1c39-460e-8860-71af6af63bd6", 100);
+
+        verify(walletRepository).save(walletCaptor.capture());
+        assertEquals(Double.MAX_VALUE, wallet.getBalance());
+    }
+
 }
