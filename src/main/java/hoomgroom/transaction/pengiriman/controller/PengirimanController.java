@@ -61,4 +61,13 @@ public class PengirimanController {
         return responseEntity;
     }
 
+    @RequestMapping(value = "/pengiriman/delete/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deletePengiriman(@PathVariable Long id) {
+        try {
+            pengirimanService.deletePengiriman(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
