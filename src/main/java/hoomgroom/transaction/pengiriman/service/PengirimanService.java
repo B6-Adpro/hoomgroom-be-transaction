@@ -56,15 +56,19 @@ public class PengirimanService {
         Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
         if (pengirimanOptional.isPresent()) {
         Pengiriman pengiriman = pengirimanOptional.get();
-            if (pengiriman.getStateString().equals("DALAM_PROSES")) {
-                pengiriman.setState(new PackagingState());
-                pengiriman.setStateString("SEDANG_DIKEMAS");
-            } else if (pengiriman.getStateString().equals("SEDANG_DIKEMAS")) {
-                pengiriman.setState(new ShippingState());
-                pengiriman.setStateString("SEDANG_DIKIRIM");
-            } else if (pengiriman.getStateString().equals("SEDANG_DIKIRIM")) {
-                pengiriman.setState(new ArrivedState());
-                pengiriman.setStateString("TELAH_TIBA");
+            switch (pengiriman.getStateString()) {
+                case "DALAM_PROSES" -> {
+                    pengiriman.setState(new PackagingState());
+                    pengiriman.setStateString("SEDANG_DIKEMAS");
+                }
+                case "SEDANG_DIKEMAS" -> {
+                    pengiriman.setState(new ShippingState());
+                    pengiriman.setStateString("SEDANG_DIKIRIM");
+                }
+                case "SEDANG_DIKIRIM" -> {
+                    pengiriman.setState(new ArrivedState());
+                    pengiriman.setStateString("TELAH_TIBA");
+                }
             }
             return pengirimanRepository.save(pengiriman);
         } else { throw new RuntimeException("Pengiriman with id " + id + " not found"); }
