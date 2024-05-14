@@ -72,4 +72,11 @@ public class PengirimanService {
             pengirimanRepository.save(pengiriman);
         } else { throw new RuntimeException("Pengiriman with id " + id + " not found"); }
     }
+
+    public void deletePengiriman(Long id) {
+        Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
+        if (pengirimanOptional.isPresent()) {
+            pengirimanRepository.deleteById(id);
+        } else { throw new RuntimeException("Pengiriman with id " + id + " not found"); }
+    }
 }
