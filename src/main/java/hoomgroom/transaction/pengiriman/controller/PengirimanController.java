@@ -49,4 +49,16 @@ public class PengirimanController {
         return responseEntity;
     }
 
+    @RequestMapping(value = "/pengiriman/update/{id}", method = RequestMethod.PUT)
+    public ResponseEntity updateStatePengiriman(@PathVariable long id) {
+        ResponseEntity responseEntity = null;
+        try {
+            pengirimanService.updatePengiriman(id);
+            responseEntity = ResponseEntity.ok().build();
+        } catch (Exception e) {
+            responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
+    }
+
 }
