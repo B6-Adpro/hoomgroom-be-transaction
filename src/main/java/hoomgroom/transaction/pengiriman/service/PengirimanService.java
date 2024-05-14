@@ -1,7 +1,6 @@
 package hoomgroom.transaction.pengiriman.service;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
-import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 
 import hoomgroom.transaction.pengiriman.repository.PengirimanRepository;
@@ -20,14 +19,14 @@ import java.util.stream.Collectors;
 public class PengirimanService {
     @Autowired
     private PengirimanRepository pengirimanRepository;
-    public Pengiriman createPengiriman(Pengiriman pengiriman){
+    public void createPengiriman(Pengiriman pengiriman){
         Pengiriman newPengiriman = pengiriman.builder()
                 .transaksiId(pengiriman.getTransaksiId())
                 .alamatPengiriman(pengiriman.getAlamatPengiriman())
                 .furniturePengiriman(pengiriman.getFurniturePengiriman())
                 .stateString(pengiriman.getStateString())
                 .build();
-        return pengirimanRepository.save(newPengiriman);
+        pengirimanRepository.save(newPengiriman);
     }
 
     public List<PengirimanData> getAllPengiriman() {
@@ -52,7 +51,7 @@ public class PengirimanService {
         return pengirimanDTO;
     }
 
-    public Pengiriman updatePengiriman(Long id) {
+    public void updatePengiriman(Long id) {
         Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
         if (pengirimanOptional.isPresent()) {
         Pengiriman pengiriman = pengirimanOptional.get();
@@ -70,7 +69,7 @@ public class PengirimanService {
                     pengiriman.setStateString("TELAH_TIBA");
                 }
             }
-            return pengirimanRepository.save(pengiriman);
+            pengirimanRepository.save(pengiriman);
         } else { throw new RuntimeException("Pengiriman with id " + id + " not found"); }
     }
 }
