@@ -51,4 +51,20 @@ public class PengirimanService {
         pengirimanDTO.setStateString(pengiriman.getStateString());
         return pengirimanDTO;
     }
+
+    public Pengiriman updatePengiriman(Long id) {
+        Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
+        Pengiriman pengiriman = pengirimanOptional.get();
+        if (pengiriman.getStateString().equals("DALAM_PROSES")) {
+            pengiriman.setState(new PackagingState());
+            pengiriman.setStateString("SEDANG_DIKEMAS");
+        } else if (pengiriman.getStateString().equals("SEDANG_DIKEMAS")) {
+            pengiriman.setState(new ShippingState());
+            pengiriman.setStateString("SEDANG_DIKIRIM");
+        } else if (pengiriman.getStateString().equals("SEDANG_DIKIRIM")) {
+            pengiriman.setState(new ArrivedState());
+            pengiriman.setStateString("TELAH_TIBA");
+        }
+        return pengirimanRepository.save(pengiriman);
+    }
 }
