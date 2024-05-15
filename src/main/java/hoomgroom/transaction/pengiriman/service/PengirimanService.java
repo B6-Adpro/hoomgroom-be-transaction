@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 public class PengirimanService {
     @Autowired
     private PengirimanRepository pengirimanRepository;
-    public void createPengiriman(Pengiriman pengiriman){
+    public Pengiriman createPengiriman(Pengiriman pengiriman){
         Pengiriman newPengiriman = pengiriman.builder()
                 .transaksiId(pengiriman.getTransaksiId())
                 .alamatPengiriman(pengiriman.getAlamatPengiriman())
                 .furniturePengiriman(pengiriman.getFurniturePengiriman())
                 .stateString(pengiriman.getStateString())
                 .build();
-        pengirimanRepository.save(newPengiriman);
+        return pengirimanRepository.save(newPengiriman);
     }
 
     public List<PengirimanData> getAllPengiriman() {
