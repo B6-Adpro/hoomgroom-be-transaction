@@ -1,11 +1,14 @@
 package hoomgroom.transaction.pengiriman.controller;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -14,14 +17,17 @@ import hoomgroom.transaction.pengiriman.model.Pengiriman;
 import hoomgroom.transaction.pengiriman.service.PengirimanService;
 
 @RestController
+@EnableAsync
 public class PengirimanController {
 
     @Autowired
     private PengirimanService pengirimanService;
 
+    @Async
     @RequestMapping(value = "/pengiriman/view", method = RequestMethod.GET)
-    public List<PengirimanData> getAllPengiriman() {
-        return pengirimanService.getAllPengiriman();
+    public CompletableFuture<ResponseEntity<List<PengirimanData>>> getAllPengiriman() {
+        List<PengirimanData> pengirimanList = pengirimanService.getAllPengiriman();
+        return CompletableFuture.completedFuture(ResponseEntity.ok(pengirimanList));
     }
 
     @RequestMapping(value = "/pengiriman/{id}", method = RequestMethod.GET)
@@ -36,6 +42,7 @@ public class PengirimanController {
         return responseEntity;
     }
 
+    @Async
     @RequestMapping(value = "/pengiriman/create", method = RequestMethod.POST)
     public ResponseEntity createPengiriman(@RequestBody Pengiriman pengiriman) {
         ResponseEntity responseEntity = null;
