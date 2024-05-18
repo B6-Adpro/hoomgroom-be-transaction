@@ -30,8 +30,9 @@ public class PengirimanController {
         return CompletableFuture.completedFuture(ResponseEntity.ok(pengirimanList));
     }
 
+    @Async
     @RequestMapping(value = "/pengiriman/{id}", method = RequestMethod.GET)
-    public ResponseEntity getPengirimanById(@PathVariable long id) {
+    public CompletableFuture<ResponseEntity> getPengirimanById(@PathVariable long id) {
         ResponseEntity responseEntity = null;
         try {
             pengirimanService.getPengirimanById(id);
@@ -39,12 +40,12 @@ public class PengirimanController {
         } catch (Exception e) {
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
         }
-        return responseEntity;
+        return CompletableFuture.completedFuture(responseEntity);
     }
 
     @Async
     @RequestMapping(value = "/pengiriman/create", method = RequestMethod.POST)
-    public ResponseEntity createPengiriman(@RequestBody Pengiriman pengiriman) {
+    public CompletableFuture<ResponseEntity> createPengiriman(@RequestBody Pengiriman pengiriman) {
         ResponseEntity responseEntity = null;
         try {
             pengirimanService.createPengiriman(pengiriman);
@@ -53,11 +54,12 @@ public class PengirimanController {
             System.out.println("Error!");
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return responseEntity;
+        return CompletableFuture.completedFuture(responseEntity);
     }
 
+    @Async
     @RequestMapping(value = "/pengiriman/update/{id}", method = RequestMethod.PUT)
-    public ResponseEntity updateStatePengiriman(@PathVariable long id) {
+    public CompletableFuture<ResponseEntity> updateStatePengiriman(@PathVariable long id) {
         ResponseEntity responseEntity = null;
         try {
             pengirimanService.updatePengiriman(id);
@@ -65,9 +67,10 @@ public class PengirimanController {
         } catch (Exception e) {
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
         }
-        return responseEntity;
+        return CompletableFuture.completedFuture(responseEntity);
     }
 
+    @Async //Belum terimplementasi dengan benar wip
     @RequestMapping(value = "/pengiriman/delete/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deletePengiriman(@PathVariable Long id) {
         try {
