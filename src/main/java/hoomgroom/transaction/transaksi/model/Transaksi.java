@@ -48,7 +48,15 @@ public class Transaksi {
     @Column(name = "final_price", updatable = false, nullable = false)
     private Long finalPrice;
 
-    public Transaksi(String produkID, String namaProduk, String linkImage, String promoCode, String username, Long originalPrice, Long discountPrice, Long potonganPromo) {
-
+    public Transaksi(String username, String produkID, String namaProduk, String linkImage, String promoCode, Long originalPrice, Long discountPrice, Long potonganPromo) {
+        this.produkID = produkID;
+        this.namaProduk = namaProduk;
+        this.linkImage = linkImage;
+        this.promoCode = promoCode;
+        this.username = username;
+        this.originalPrice = originalPrice;
+        this.discountPrice = discountPrice;
+        this.potonganPromo = potonganPromo;
+        this.finalPrice = discountPrice - potonganPromo;
     }
 }
