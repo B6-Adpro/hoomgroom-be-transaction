@@ -1,7 +1,7 @@
-package hoomgroom.product.Auth.config;
+package hoomgroom.transaction.Auth.config;
 
-import hoomgroom.product.Auth.model.User;
-import hoomgroom.product.Auth.service.JwtService;
+import hoomgroom.transaction.Auth.model.User;
+import hoomgroom.transaction.Auth.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

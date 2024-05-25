@@ -1,4 +1,4 @@
-package hoomgroom.product.Auth.model;
+package hoomgroom.transaction.Auth.model;
 
 public enum Role {
     USER,

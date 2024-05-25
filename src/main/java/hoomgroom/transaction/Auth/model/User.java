@@ -1,4 +1,4 @@
-package hoomgroom.product.Auth.model;
+package hoomgroom.transaction.Auth.model;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

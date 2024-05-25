@@ -1,7 +1,7 @@
-package hoomgroom.product.Auth.service;
+package hoomgroom.transaction.Auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hoomgroom.product.Auth.model.User;
+import hoomgroom.transaction.Auth.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-    private static final String SECRET_KEY = System.getenv("SECRET_KEY");
+    private static final String SECRET_KEY = System.getenv("JWT_SECRET_KEY");
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

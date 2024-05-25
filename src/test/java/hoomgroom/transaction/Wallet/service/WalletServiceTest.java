@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -62,7 +63,7 @@ public class WalletServiceTest {
     void testAddWallet() {
         when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
 
-        Wallet createdWallet = walletService.add();
+        Wallet createdWallet = walletService.add(UUID.randomUUID());
 
         assertNotNull(createdWallet);
         verify(walletRepository, times(1)).save(any(Wallet.class));

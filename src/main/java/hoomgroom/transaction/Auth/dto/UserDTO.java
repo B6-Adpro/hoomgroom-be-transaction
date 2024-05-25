@@ -1,6 +1,6 @@
-package hoomgroom.product.Auth.dto;
+package hoomgroom.transaction.Auth.dto;
 
-import hoomgroom.product.Auth.model.Role;
+import hoomgroom.transaction.Auth.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

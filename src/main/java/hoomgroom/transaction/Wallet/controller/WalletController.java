@@ -1,31 +1,52 @@
 package hoomgroom.transaction.Wallet.controller;
-
+import hoomgroom.transaction.Auth.model.User;
+import hoomgroom.transaction.Auth.service.JwtService;
 import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.service.TopUpByCreditCard;
 import hoomgroom.transaction.Wallet.service.TopUpByEWallet;
 import hoomgroom.transaction.Wallet.service.TopUpStrategy;
 import hoomgroom.transaction.Wallet.service.WalletService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/wallets")
+@RequestMapping("/wallet")
 public class WalletController {
-
+    @Autowired
+    private JwtService jwtService;
     private final WalletService walletService;
-
+    private static final String JWT_HEADER = "Authorization";
+    private static final String JWT_TOKEN_PREFIX = "Bearer";
     @Autowired
     public WalletController(WalletService walletService) {
         this.walletService = walletService;
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Wallet> createWallet() {
-        Wallet wallet = walletService.add();
+    public ResponseEntity<Wallet> createWallet(@NonNull HttpServletRequest request) {
+        final String authHeader = request.getHeader(JWT_HEADER);
+        String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+        User userDetails = jwtService.extractUser(jwtToken);
+        UUID uid = userDetails.getId();
+
+        // Check if a wallet already exists for the user
+        Wallet existingWallet = walletService.findByUserId(uid);
+        if (existingWallet != null) {
+            // If a wallet already exists, return a conflict response
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(existingWallet);
+        }
+
+        // If no existing wallet, create a new one
+        Wallet wallet = walletService.add(uid);
         return ResponseEntity.status(HttpStatus.CREATED).body(wallet);
     }
 
@@ -59,7 +80,7 @@ public class WalletController {
         }
     }
 
-    @GetMapping("/{walletId}")
+    @GetMapping("/get/{walletId}")
     public ResponseEntity<Wallet> getWalletById(@PathVariable String walletId) {
         Wallet wallet = walletService.getWalletById(walletId);
         if (wallet != null) {
@@ -100,6 +121,22 @@ public class WalletController {
 
         public void setCardNumber(String cardNumber) {
             this.cardNumber = cardNumber;
+        }
+
+        public void setPhoneNumber(String number) {
+            this.phoneNumber = number;
+        }
+
+        public void setWalletId(String Id) {
+            this.walletId=Id;
+        }
+
+        public void setAmount(double v) {
+            this.amount=v;
+        }
+
+        public void setStrategy(String s) {
+            this.strategy=s;
         }
     }
 }

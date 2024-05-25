@@ -14,7 +14,6 @@ import java.util.UUID;
 @Getter
 public class WalletService {
     private final WalletRepository walletRepository;
-
     @Autowired
     public WalletService(WalletRepository walletRepository) {
         this.walletRepository = walletRepository;
@@ -26,8 +25,13 @@ public class WalletService {
     }
 
     private TopUpStrategy strategy;
-    public Wallet add() {
-        Wallet wallet = new Wallet();
+    public Wallet add(UUID userId) {
+        Wallet existingWallet = walletRepository.findByUserId(userId);
+        if (existingWallet != null) {
+            throw new IllegalStateException("Wallet for user already exists");
+        }
+
+        Wallet wallet = new Wallet(userId);
         return walletRepository.save(wallet);
     }
 
@@ -41,5 +45,9 @@ public class WalletService {
         }
 
         strategy.topUp(walletId, amount);
+    }
+
+    public Wallet findByUserId(UUID uid) {
+        return walletRepository.findByUserId(uid);
     }
 }
