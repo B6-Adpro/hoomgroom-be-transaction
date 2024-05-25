@@ -1,5 +1,6 @@
 package hoomgroom.transaction.Wallet.controller;
 
+import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.service.TopUpByCreditCard;
 import hoomgroom.transaction.Wallet.service.TopUpByEWallet;
 import hoomgroom.transaction.Wallet.service.TopUpStrategy;
@@ -22,14 +23,24 @@ public class WalletController {
         this.walletService = walletService;
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<Wallet> createWallet() {
+        Wallet wallet = walletService.add();
+        return ResponseEntity.status(HttpStatus.CREATED).body(wallet);
+    }
+
     @PostMapping("/topup")
     public ResponseEntity<String> topUpWallet(@RequestBody TopUpRequest request) {
         try {
             TopUpStrategy strategy;
-            if ("creditCard".equals(request.getStrategy())) {
-                strategy = new TopUpByCreditCard(walletService.getWalletRepository());
-            } else if ("eWallet".equals(request.getStrategy())) {
-                strategy = new TopUpByEWallet(walletService.getWalletRepository());
+            if ("Credit Card".equals(request.getStrategy())) {
+                TopUpByCreditCard creditCardStrategy = new TopUpByCreditCard(walletService.getWalletRepository());
+                creditCardStrategy.setCardNumber(request.getCardNumber());
+                strategy = creditCardStrategy;
+            } else if ("E-Wallet".equals(request.getStrategy())) {
+                TopUpByEWallet eWalletStrategy = new TopUpByEWallet(walletService.getWalletRepository());
+                eWalletStrategy.setPhoneNumber(request.getPhoneNumber());
+                strategy = eWalletStrategy;
             } else {
                 return ResponseEntity.badRequest().body("Invalid top-up strategy");
             }
@@ -48,35 +59,47 @@ public class WalletController {
         }
     }
 
+    @GetMapping("/{walletId}")
+    public ResponseEntity<Wallet> getWalletById(@PathVariable String walletId) {
+        Wallet wallet = walletService.getWalletById(walletId);
+        if (wallet != null) {
+            return ResponseEntity.ok(wallet);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     // Inner class to represent the request body for top-up request
     public static class TopUpRequest {
         private String walletId;
         private double amount;
-        private String strategy; // Use a String to represent the selected strategy
+        private String strategy;
+        private String cardNumber;
+        private String phoneNumber;
 
         // Getters and setters
         public String getWalletId() {
             return walletId;
         }
 
-        public void setWalletId(String walletId) {
-            this.walletId = walletId;
-        }
-
         public double getAmount() {
             return amount;
-        }
-
-        public void setAmount(double amount) {
-            this.amount = amount;
         }
 
         public String getStrategy() {
             return strategy;
         }
 
-        public void setStrategy(String strategy) {
-            this.strategy = strategy;
+        public String getCardNumber() {
+            return cardNumber;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public void setCardNumber(String cardNumber) {
+            this.cardNumber = cardNumber;
         }
     }
 }

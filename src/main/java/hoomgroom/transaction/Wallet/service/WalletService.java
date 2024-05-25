@@ -32,8 +32,14 @@ public class WalletService {
     }
 
     public void topUp(String walletId, double amount) {
-        if (strategy.validateTopUpDetails()) {
-            strategy.topUp(walletId, amount);
+        if (strategy == null) {
+            throw new IllegalArgumentException("TopUp strategy is not set");
         }
+
+        if (!strategy.validateTopUpDetails()) {
+            throw new IllegalArgumentException("Invalid top-up details");
+        }
+
+        strategy.topUp(walletId, amount);
     }
 }

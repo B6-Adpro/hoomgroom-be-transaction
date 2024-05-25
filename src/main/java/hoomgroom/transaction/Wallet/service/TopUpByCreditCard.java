@@ -55,6 +55,8 @@ public class TopUpByCreditCard implements TopUpStrategy {
             Wallet wallet = found.get();
             wallet.setBalance(wallet.getBalance() + amount);
             walletRepository.save(wallet);
+        } else {
+            throw new IllegalArgumentException("Wallet not found");
         }
     }
 }

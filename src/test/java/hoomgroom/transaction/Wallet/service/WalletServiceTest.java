@@ -2,6 +2,7 @@ package hoomgroom.transaction.Wallet.service;
 
 import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,65 +11,121 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class WalletServiceTest {
 
     @Mock
-    WalletRepository walletRepository;
+    private WalletRepository walletRepository;
+
+    @Mock
+    private TopUpByEWallet topUpByEWallet;
+
+    @Mock
+    private TopUpByCreditCard topUpByCreditCard;
 
     @InjectMocks
-    WalletService walletService;
+    private WalletService walletService;
 
-    @Test
-    void testAddAndGetWallet() {
-        Wallet wallet = new Wallet();
-        wallet.setWalletId("eb558e9f-1c39-460e-8860-71af6af63bd6");
-        wallet.setBalance(100000);
-        walletRepository.save(wallet);
+    private Wallet wallet;
 
-        Optional<Wallet> found = walletRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6");
-
-        assertThat(found.isPresent());
-        assertEquals(wallet, found.get());
+    @BeforeEach
+    void setUp() {
+        wallet = new Wallet();
+        wallet.setWalletId("1");
+        wallet.setBalance(100.0);
     }
 
     @Test
-    void testTopUpWithCreditCardValid() {
-        Wallet wallet = new Wallet();
-        wallet.setWalletId("eb558e9f-1c39-460e-8860-71af6af63bd6");
-        wallet.setBalance(100000);
-        when(walletRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6")).thenReturn(java.util.Optional.of(wallet));
+    void testGetWalletById_WalletExists() {
+        when(walletRepository.findById("1")).thenReturn(Optional.of(wallet));
 
-        String cardNumber = "4103601193829382";
+        Wallet foundWallet = walletService.getWalletById("1");
 
-        TopUpByCreditCard strategy = new TopUpByCreditCard(walletRepository);
-        strategy.setCardNumber(cardNumber);
-        walletService.setStrategy(strategy);
-
-        walletService.topUp("eb558e9f-1c39-460e-8860-71af6af63bd6", 50000);
-
-        assertEquals(150000, wallet.getBalance());
+        assertEquals(wallet, foundWallet);
+        verify(walletRepository, times(1)).findById("1");
     }
 
-//    @Test
-//    void testTopUpWithInvalidCreditCard() {
-//        Wallet wallet = new Wallet();
-//        wallet.setWalletId("eb558e9f-1c39-460e-8860-71af6af63bd6");
-//        wallet.setBalance(100000);
-//        when(walletRepository.findById("eb558e9f-1c39-460e-8860-71af6af63bd6")).thenReturn(java.util.Optional.of(wallet));
-//
-//        String cardNumber = "invalidCardNumber";
-//
-//        TopUpByCreditCard strategy = new TopUpByCreditCard(walletRepository);
-//        strategy.setCardNumber(cardNumber);
-//        walletService.setStrategy(strategy);
-//
-//        walletService.topUp("eb558e9f-1c39-460e-8860-71af6af63bd6", 50000);
-//
-//        assertEquals(100000, wallet.getBalance()); // Balance should remain unchanged
-//    }
+    @Test
+    void testGetWalletById_WalletNotFound() {
+        when(walletRepository.findById("1")).thenReturn(Optional.empty());
+
+        Wallet foundWallet = walletService.getWalletById("1");
+
+        assertNull(foundWallet);
+        verify(walletRepository, times(1)).findById("1");
+    }
+
+    @Test
+    void testAddWallet() {
+        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
+
+        Wallet createdWallet = walletService.add();
+
+        assertNotNull(createdWallet);
+        verify(walletRepository, times(1)).save(any(Wallet.class));
+    }
+
+    @Test
+    void testTopUp_WithValidEWalletStrategy() {
+        walletService.setStrategy(topUpByEWallet);
+        when(topUpByEWallet.validateTopUpDetails()).thenReturn(true);
+        doNothing().when(topUpByEWallet).topUp("1", 50.0);
+
+        walletService.topUp("1", 50.0);
+
+        verify(topUpByEWallet, times(1)).validateTopUpDetails();
+        verify(topUpByEWallet, times(1)).topUp("1", 50.0);
+    }
+
+    @Test
+    void testTopUp_WithInvalidEWalletStrategy() {
+        walletService.setStrategy(topUpByEWallet);
+        when(topUpByEWallet.validateTopUpDetails()).thenReturn(false);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            walletService.topUp("1", 50.0);
+        });
+
+        assertEquals("Invalid top-up details", exception.getMessage());
+        verify(topUpByEWallet, times(1)).validateTopUpDetails();
+        verify(topUpByEWallet, times(0)).topUp(anyString(), anyDouble());
+    }
+
+    @Test
+    void testTopUp_WithValidCreditCardStrategy() {
+        walletService.setStrategy(topUpByCreditCard);
+        when(topUpByCreditCard.validateTopUpDetails()).thenReturn(true);
+        doNothing().when(topUpByCreditCard).topUp("1", 50.0);
+
+        walletService.topUp("1", 50.0);
+
+        verify(topUpByCreditCard, times(1)).validateTopUpDetails();
+        verify(topUpByCreditCard, times(1)).topUp("1", 50.0);
+    }
+
+    @Test
+    void testTopUp_WithInvalidCreditCardStrategy() {
+        walletService.setStrategy(topUpByCreditCard);
+        when(topUpByCreditCard.validateTopUpDetails()).thenReturn(false);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            walletService.topUp("1", 50.0);
+        });
+
+        assertEquals("Invalid top-up details", exception.getMessage());
+        verify(topUpByCreditCard, times(1)).validateTopUpDetails();
+        verify(topUpByCreditCard, times(0)).topUp(anyString(), anyDouble());
+    }
+
+    @Test
+    void testTopUp_NoStrategySet() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            walletService.topUp("1", 50.0);
+        });
+
+        assertEquals("TopUp strategy is not set", exception.getMessage());
+    }
 }
