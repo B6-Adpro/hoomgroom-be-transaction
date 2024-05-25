@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface TransaksiRepository extends JpaRepository<Transaksi, UUID> {
-    
+    Optional<Transaksi> findById(@NonNull UUID transaksiId);
 }
