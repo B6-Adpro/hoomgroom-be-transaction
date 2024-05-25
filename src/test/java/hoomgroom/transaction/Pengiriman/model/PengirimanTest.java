@@ -1,4 +1,4 @@
-package hoomgroom.transaction.model;
+package hoomgroom.transaction.Pengiriman.model;
 
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 import org.junit.jupiter.api.BeforeEach;

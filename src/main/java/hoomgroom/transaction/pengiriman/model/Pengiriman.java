@@ -31,17 +31,19 @@ public class Pengiriman {
     PengirimanState state = new ProcessingState();
 
     @Column(name = "state") @Builder.Default
-    String stateString = PengirimanStatus.DALAM_PROSES.getValue();
+    String stateString = PengirimanStatus.VERIFIKASI.getValue();
 
-    @Column(name = "furniture_pengiriman")
+    @Column(name = "furniture_pengiriman", nullable = false)
     String furniturePengiriman;
+
+    @Column(name = "metode_transportasi")
+    String metodeTransportasi;
 
     public Pengiriman( String transaksi, String alamatPengiriman, String furniturePengiriman) {
         this.transaksiId = transaksi;
         this.alamatPengiriman = alamatPengiriman;
         this.furniturePengiriman = furniturePengiriman;
         setState(new ProcessingState()); //Untuk state design pattern
-        this.stateString = PengirimanStatus.DALAM_PROSES.getValue(); //Untuk dimasukan ke database dalam bentu string
 
 
         if (furniturePengiriman.isBlank()) {

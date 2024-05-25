@@ -19,4 +19,5 @@ public class PengirimanData {
     private String alamat;
     private String furniture;
     private String stateString;
+    private String metodeTransportasi;
 }

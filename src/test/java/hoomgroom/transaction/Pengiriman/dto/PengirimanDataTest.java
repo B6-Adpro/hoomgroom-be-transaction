@@ -1,4 +1,4 @@
-package hoomgroom.transaction.dto;
+package hoomgroom.transaction.Pengiriman.dto;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +17,7 @@ public class PengirimanDataTest {
         pengirimanData.setTransaksiId("T123");
         pengirimanData.setAlamat("Some Address");
         pengirimanData.setFurniture("Some Furniture");
-        pengirimanData.setStateString("DALAM_PROSES");
+        pengirimanData.setStateString("VERIFIKASI");
     }
 
     @Test
@@ -26,7 +26,7 @@ public class PengirimanDataTest {
         assertThat(pengirimanData.getTransaksiId()).isEqualTo("T123");
         assertThat(pengirimanData.getAlamat()).isEqualTo("Some Address");
         assertThat(pengirimanData.getFurniture()).isEqualTo("Some Furniture");
-        assertThat(pengirimanData.getStateString()).isEqualTo("DALAM_PROSES");
+        assertThat(pengirimanData.getStateString()).isEqualTo("VERIFIKASI");
     }
 
     @Test
@@ -36,14 +36,14 @@ public class PengirimanDataTest {
                 .transaksiId("T123")
                 .alamat("Some Address")
                 .furniture("Some Furniture")
-                .stateString("DALAM_PROSES")
+                .stateString("VERIFIKASI")
                 .build();
 
         assertThat(pengirimanDataFromBuilder.getId()).isEqualTo("1");
         assertThat(pengirimanDataFromBuilder.getTransaksiId()).isEqualTo("T123");
         assertThat(pengirimanDataFromBuilder.getAlamat()).isEqualTo("Some Address");
         assertThat(pengirimanDataFromBuilder.getFurniture()).isEqualTo("Some Furniture");
-        assertThat(pengirimanDataFromBuilder.getStateString()).isEqualTo("DALAM_PROSES");
+        assertThat(pengirimanDataFromBuilder.getStateString()).isEqualTo("VERIFIKASI");
     }
 
     @Test
@@ -59,26 +59,26 @@ public class PengirimanDataTest {
 
     @Test
     void testPengirimanDataAllArgsConstructor() {
-        PengirimanData pengirimanDataAllArgs = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "DALAM_PROSES");
+        PengirimanData pengirimanDataAllArgs = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
 
         assertThat(pengirimanDataAllArgs.getId()).isEqualTo("1");
         assertThat(pengirimanDataAllArgs.getTransaksiId()).isEqualTo("T123");
         assertThat(pengirimanDataAllArgs.getAlamat()).isEqualTo("Some Address");
         assertThat(pengirimanDataAllArgs.getFurniture()).isEqualTo("Some Furniture");
-        assertThat(pengirimanDataAllArgs.getStateString()).isEqualTo("DALAM_PROSES");
+        assertThat(pengirimanDataAllArgs.getStateString()).isEqualTo("VERIFIKASI");
     }
 
     @Test
     void testPengirimanDataToString() {
-        String expectedString = "PengirimanData(id=1, transaksiId=T123, alamat=Some Address, furniture=Some Furniture, stateString=DALAM_PROSES)";
+        String expectedString = "PengirimanData(id=1, transaksiId=T123, alamat=Some Address, furniture=Some Furniture, stateString=VERIFIKASI, metodeTransportasi=null)";
 
         assertThat(pengirimanData.toString()).isEqualTo(expectedString);
     }
 
     @Test
     void testPengirimanDataEqualsAndHashCode() {
-        PengirimanData pengirimanData1 = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "DALAM_PROSES");
-        PengirimanData pengirimanData2 = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "DALAM_PROSES");
+        PengirimanData pengirimanData1 = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
+        PengirimanData pengirimanData2 = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
 
         assertThat(pengirimanData1).isEqualTo(pengirimanData2);
         assertThat(pengirimanData1.hashCode()).isEqualTo(pengirimanData2.hashCode());

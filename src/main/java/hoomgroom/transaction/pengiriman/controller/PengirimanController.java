@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
+import hoomgroom.transaction.pengiriman.dto.PengirimanUpdateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,10 +60,10 @@ public class PengirimanController {
 
     @Async
     @RequestMapping(value = "/pengiriman/update/{id}", method = RequestMethod.PUT)
-    public CompletableFuture<ResponseEntity> updateStatePengiriman(@PathVariable long id) {
+    public CompletableFuture<ResponseEntity> updateStatePengiriman(@PathVariable Long id,@RequestBody PengirimanUpdateRequest request) {
         ResponseEntity responseEntity = null;
         try {
-            pengirimanService.updatePengiriman(id);
+            pengirimanService.updatePengiriman(id, request);
             responseEntity = ResponseEntity.ok().build();
         } catch (Exception e) {
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
@@ -70,14 +71,14 @@ public class PengirimanController {
         return CompletableFuture.completedFuture(responseEntity);
     }
 
-    @Async //Belum terimplementasi dengan benar wip
+    @Async
     @RequestMapping(value = "/pengiriman/delete/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deletePengiriman(@PathVariable Long id) {
+    public CompletableFuture<ResponseEntity<Void>> deletePengiriman(@PathVariable Long id) {
         try {
             pengirimanService.deletePengiriman(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return CompletableFuture.completedFuture(new ResponseEntity<>(HttpStatus.NO_CONTENT));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return CompletableFuture.completedFuture(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
     }
 }

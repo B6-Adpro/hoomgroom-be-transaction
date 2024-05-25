@@ -1,4 +1,4 @@
-package hoomgroom.transaction.service;
+package hoomgroom.transaction.Pengiriman.service;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
