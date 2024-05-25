@@ -1,6 +1,6 @@
 package hoomgroom.transaction.model;
 
-import hoomgroom.transaction.pengiriman.model.Transaksi;
+import hoomgroom.transaction.transaksi.model.Transaksi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +11,7 @@ class TransaksiTest {
     private String namaProduk;
     private String linkImage;
     private String promoCode;
+    private String username;
     private Long originalPrice;
     private Long discountPrice;
     private Long potonganPromo;
@@ -24,11 +25,12 @@ class TransaksiTest {
         originalPrice = 40000L;
         discountPrice = 30000L;
         potonganPromo = 5000L;
+        username = "Adpro123";
     }
 
     @Test
     void testTransaksiCreate() {
-        Transaksi transaksi = new Transaksi(produkID, namaProduk, linkImage, promoCode, originalPrice, discountPrice, potonganPromo);
+        Transaksi transaksi = new Transaksi(username, produkID, namaProduk, linkImage, promoCode, originalPrice, discountPrice, potonganPromo);
         assertEquals("aabbcswdf", transaksi.getProdukID());
         assertEquals("Meja IKEA 1 ton untuk anak 50 tahun", transaksi.getNamaProduk());
         assertEquals("inilink", transaksi.getLinkImage());
@@ -36,5 +38,6 @@ class TransaksiTest {
         assertEquals(40000L, transaksi.getOriginalPrice());
         assertEquals(30000L, transaksi.getDiscountPrice());
         assertEquals(5000L, transaksi.getPotonganPromo());
+        assertEquals(25000L, transaksi.getFinalPrice());
     }
 }
