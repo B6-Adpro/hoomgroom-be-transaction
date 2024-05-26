@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequestMapping("/wallet")
 public class WalletController {
     @Autowired
-    private JwtService jwtService;
+    JwtService jwtService;
     private final WalletService walletService;
     private static final String JWT_HEADER = "Authorization";
     private static final String JWT_TOKEN_PREFIX = "Bearer";

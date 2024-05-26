@@ -74,6 +74,7 @@ public class WalletRepositoryTest {
         walletRepository.save(wallet);
 
         Wallet wallet2 = new Wallet();
+        wallet2.setWalletId(UUID.randomUUID().toString());
         wallet2.setBalance(500.0);
         walletRepository.save(wallet2);
 

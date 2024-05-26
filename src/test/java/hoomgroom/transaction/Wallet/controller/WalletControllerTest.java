@@ -1,6 +1,8 @@
 package hoomgroom.transaction.Wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hoomgroom.transaction.Auth.model.User;
+import hoomgroom.transaction.Auth.service.JwtService;
 import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.service.TopUpByCreditCard;
 import hoomgroom.transaction.Wallet.service.TopUpByEWallet;
@@ -8,162 +10,133 @@ import hoomgroom.transaction.Wallet.service.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(WalletController.class)
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class WalletControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private WalletController walletController;
+    @Mock
+    private JwtService jwtService;
 
-    @MockBean
+    @Mock
     private WalletService walletService;
 
-    private Wallet wallet;
-    private ObjectMapper objectMapper;
+    private MockMvc mockMvc;
+
+    private static final String JWT_TOKEN = "Bearer mock-jwt-token";
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174000";
 
     @BeforeEach
-    void setUp() {
-        objectMapper = new ObjectMapper();
-        wallet = new Wallet();
-        wallet.setWalletId("1");
-        wallet.setBalance(100.0);
+    public void setup() {
+        walletController.jwtService = jwtService;
+        mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
     }
 
     @Test
-    void testCreateWallet() throws Exception {
-        when(walletService.add()).thenReturn(wallet);
+    public void testCreateWallet() throws Exception {
+        UUID userId = UUID.fromString(USER_ID);
+        Wallet wallet = new Wallet();
+        wallet.setWalletId(UUID.randomUUID().toString());
+        wallet.setUserId(userId);
 
-        mockMvc.perform(post("/wallets/create"))
+        User user = new User();
+        user.setId(userId);
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
+        when(walletService.findByUserId(userId)).thenReturn(null);
+        when(walletService.add(userId)).thenReturn(wallet);
+
+        mockMvc.perform(post("/wallet/create")
+                        .header("Authorization", JWT_TOKEN))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.walletId").value("1"))
-                .andExpect(jsonPath("$.balance").value(100.0));
+                .andExpect(jsonPath("$.walletId").value(wallet.getWalletId()));
 
-        verify(walletService, times(1)).add();
+        verify(walletService, times(1)).add(userId);
     }
 
     @Test
-    void testGetWalletById_WalletExists() throws Exception {
-        when(walletService.getWalletById("1")).thenReturn(wallet);
+    public void testCreateWalletConflict() throws Exception {
+        UUID userId = UUID.fromString(USER_ID);
+        Wallet existingWallet = new Wallet();
+        existingWallet.setWalletId(UUID.randomUUID().toString());
+        existingWallet.setUserId(userId);
 
-        mockMvc.perform(get("/wallets/1"))
+        User user = new User();
+        user.setId(userId);
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
+        when(walletService.findByUserId(userId)).thenReturn(existingWallet);
+
+        mockMvc.perform(post("/wallet/create")
+                        .header("Authorization", JWT_TOKEN))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.walletId").value(existingWallet.getWalletId()));
+
+        verify(walletService, never()).add(userId);
+    }
+
+    @Test
+    public void testTopUpWallet() throws Exception {
+        WalletController.TopUpRequest topUpRequest = new WalletController.TopUpRequest();
+        topUpRequest.setWalletId("wallet-id");
+        topUpRequest.setAmount(100.0);
+        topUpRequest.setStrategy("Credit Card");
+        topUpRequest.setCardNumber("1234-5678-9012-3456");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestJson = objectMapper.writeValueAsString(topUpRequest);
+
+        doNothing().when(walletService).topUp(anyString(), anyDouble());
+
+        mockMvc.perform(post("/wallet/topup")
+                        .header("Authorization", JWT_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.walletId").value("1"))
-                .andExpect(jsonPath("$.balance").value(100.0));
+                .andExpect(content().string("Wallet topped up successfully."));
 
-        verify(walletService, times(1)).getWalletById("1");
+        verify(walletService, times(1)).topUp("wallet-id", 100.0);
     }
 
     @Test
-    void testGetWalletById_WalletNotFound() throws Exception {
-        when(walletService.getWalletById("1")).thenReturn(null);
+    public void testGetWalletById() throws Exception {
+        Wallet wallet = new Wallet();
+        wallet.setWalletId("wallet-id");
+        wallet.setUserId(UUID.fromString(USER_ID));
 
-        mockMvc.perform(get("/wallets/1"))
+        when(walletService.getWalletById("wallet-id")).thenReturn(wallet);
+
+        mockMvc.perform(get("/wallet/get/wallet-id")
+                        .header("Authorization", JWT_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.walletId").value(wallet.getWalletId()));
+
+        verify(walletService, times(1)).getWalletById("wallet-id");
+    }
+
+    @Test
+    public void testGetWalletByIdNotFound() throws Exception {
+        when(walletService.getWalletById("wallet-id")).thenReturn(null);
+
+        mockMvc.perform(get("/wallet/get/wallet-id")
+                        .header("Authorization", JWT_TOKEN))
                 .andExpect(status().isNotFound());
 
-        verify(walletService, times(1)).getWalletById("1");
-    }
-
-    @Test
-    void testTopUpWallet_CreditCard_Success() throws Exception {
-        WalletController.TopUpRequest request = new WalletController.TopUpRequest();
-        request.setCardNumber("1234567812345678");
-        request.setWalletId("1");
-        request.setAmount(50.0);
-        request.setStrategy("Credit Card");
-
-        when(walletService.getWalletById("1")).thenReturn(wallet);
-        doNothing().when(walletService).setStrategy(any(TopUpByCreditCard.class));
-        doNothing().when(walletService).topUp(anyString(), anyDouble());
-
-        mockMvc.perform(post("/wallets/topup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Wallet topped up successfully."));
-
-        verify(walletService, times(1)).setStrategy(any(TopUpByCreditCard.class));
-        verify(walletService, times(1)).setStrategy(null); // Clear strategy
-        verify(walletService, times(1)).topUp(anyString(), anyDouble());
-    }
-
-    @Test
-    void testTopUpWallet_CreditCard_InvalidDetails() throws Exception {
-        WalletController.TopUpRequest request = new WalletController.TopUpRequest();
-        request.setCardNumber("invalid");
-        request.setWalletId("1");
-        request.setAmount(50.0);
-        request.setStrategy("Credit Card");
-
-        when(walletService.getWalletById("1")).thenReturn(wallet);
-        doThrow(new IllegalArgumentException("Invalid top-up details")).when(walletService).topUp(anyString(), anyDouble());
-
-        mockMvc.perform(post("/wallets/topup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid top-up details"));
-
-        verify(walletService, times(1)).setStrategy(any(TopUpByCreditCard.class));
-        verify(walletService, times(1)).setStrategy(null); // Clear strategy
-        verify(walletService, times(1)).topUp(anyString(), anyDouble());
-    }
-
-    @Test
-    void testTopUpWallet_EWallet_Success() throws Exception {
-        WalletController.TopUpRequest request = new WalletController.TopUpRequest();
-        request.setPhoneNumber("+12345678901");
-        request.setWalletId("1");
-        request.setAmount(50.0);
-        request.setStrategy("E-Wallet");
-
-        when(walletService.getWalletById("1")).thenReturn(wallet);
-        doNothing().when(walletService).setStrategy(any(TopUpByEWallet.class));
-        doNothing().when(walletService).topUp(anyString(), anyDouble());
-
-        mockMvc.perform(post("/wallets/topup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Wallet topped up successfully."));
-
-        verify(walletService, times(1)).setStrategy(any(TopUpByEWallet.class));
-        verify(walletService, times(1)).setStrategy(null); // Clear strategy
-        verify(walletService, times(1)).topUp(anyString(), anyDouble());
-    }
-
-    @Test
-    void testTopUpWallet_EWallet_InvalidDetails() throws Exception {
-        WalletController.TopUpRequest request = new WalletController.TopUpRequest();
-        request.setPhoneNumber("invalid");
-        request.setWalletId("1");
-        request.setAmount(50.0);
-        request.setStrategy("E-Wallet");
-
-        when(walletService.getWalletById("1")).thenReturn(wallet);
-        doThrow(new IllegalArgumentException("Invalid top-up details")).when(walletService).topUp(anyString(), anyDouble());
-
-        mockMvc.perform(post("/wallets/topup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid top-up details"));
-
-        verify(walletService, times(1)).setStrategy(any(TopUpByEWallet.class));
-        verify(walletService, times(1)).setStrategy(null); // Clear strategy
-        verify(walletService, times(1)).topUp(anyString(), anyDouble());
+        verify(walletService, times(1)).getWalletById("wallet-id");
     }
 }

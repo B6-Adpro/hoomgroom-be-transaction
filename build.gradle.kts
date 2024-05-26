@@ -52,8 +52,8 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.postgresql:postgresql")
+	testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+	testImplementation ("org.springframework.security:spring-security-test")
 }
 
 
