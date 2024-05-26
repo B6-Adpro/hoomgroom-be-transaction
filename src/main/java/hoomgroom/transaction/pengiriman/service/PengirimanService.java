@@ -1,15 +1,91 @@
 package hoomgroom.transaction.pengiriman.service;
 
+import hoomgroom.transaction.pengiriman.dto.PengirimanData;
+import hoomgroom.transaction.pengiriman.dto.PengirimanUpdateRequest;
+import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 
+import hoomgroom.transaction.pengiriman.repository.PengirimanRepository;
+import hoomgroom.transaction.pengiriman.service.State.ArrivedState;
+import hoomgroom.transaction.pengiriman.service.State.PackagingState;
+import hoomgroom.transaction.pengiriman.service.State.ShippingState;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public interface PengirimanService {
-    public Pengiriman create(Pengiriman pengiriman);
 
-    public List<Pengiriman> findAll();
+@Service
+public class PengirimanService {
+    @Autowired
+    private PengirimanRepository pengirimanRepository;
+    public Pengiriman createPengiriman(Pengiriman pengiriman, String user){
+        Pengiriman newPengiriman = pengiriman.builder()
+                .userPengiriman(user)
+                .transaksiId(pengiriman.getTransaksiId())
+                .alamatPengiriman(pengiriman.getAlamatPengiriman())
+                .furniturePengiriman(pengiriman.getFurniturePengiriman())
+                .stateString(pengiriman.getStateString())
+                .build();
+        return pengirimanRepository.save(newPengiriman);
+    }
 
-    Pengiriman findById(String pengirimanId);
+    public List<PengirimanData> getAllPengiriman() {
+        List<Pengiriman> pengirimanList = pengirimanRepository.findAll();
+        return pengirimanList.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 
-    public void delete(String pengirimanId);
+    public Optional<PengirimanData> getPengirimanById(Long id) {
+        Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
+        return pengirimanOptional.map(this::convertToDto);
+    }
+
+    private PengirimanData convertToDto(Pengiriman pengiriman) {
+        PengirimanData pengirimanDTO = new PengirimanData();
+        pengirimanDTO.setId(pengiriman.getPengirimanId().toString());
+        pengirimanDTO.setTransaksiId(pengiriman.getTransaksiId());
+        pengirimanDTO.setAlamat(pengiriman.getAlamatPengiriman());
+        pengirimanDTO.setFurniture(pengiriman.getFurniturePengiriman());
+        pengirimanDTO.setStateString(pengiriman.getStateString());
+        return pengirimanDTO;
+    }
+
+    public void updatePengiriman(Long id, PengirimanUpdateRequest request) {
+        Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
+        if (pengirimanOptional.isPresent()) {
+            Pengiriman pengiriman = pengirimanOptional.get();
+            switch (pengiriman.getStateString()) {
+                case "VERIFIKASI" -> {
+                    pengiriman.setState(new PackagingState());
+                    pengiriman.setStateString(PengirimanStatus.SEDANG_DIPROSES.getValue());
+                }
+                case "SEDANG_DIPROSES" -> {
+                    pengiriman.setMetodeTransportasi(request.getMetodePengiriman());
+                    pengiriman.setState(new ShippingState());
+                    pengiriman.setStateString(PengirimanStatus.SEDANG_DIKIRIM.getValue());
+                }
+                case "SEDANG_DIKIRIM" -> {
+                    pengiriman.setState(new ArrivedState());
+                    pengiriman.setStateString(PengirimanStatus.TELAH_TIBA.getValue());
+                }
+                case "DITERIMA" -> {
+                    pengiriman.setStateString(PengirimanStatus.DITERIMA.getValue());
+                }
+            }
+            pengirimanRepository.save(pengiriman);
+        } else {
+            throw new RuntimeException("Pengiriman with id " + id + " not found");
+        }
+    }
+
+    public void deletePengiriman(Long id) {
+        Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
+        if (pengirimanOptional.isPresent()) {
+            pengirimanRepository.deleteById(id);
+        } else { throw new RuntimeException("Pengiriman with id " + id + " not found"); }
+    }
 }
