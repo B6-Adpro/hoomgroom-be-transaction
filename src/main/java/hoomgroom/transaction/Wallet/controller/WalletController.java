@@ -81,9 +81,13 @@ public class WalletController {
     }
 
     @GetMapping("/get/{walletId}")
-    public ResponseEntity<Wallet> getWalletById(@PathVariable String walletId) {
-        Wallet wallet = walletService.getWalletById(walletId);
-        if (wallet != null) {
+    public ResponseEntity<Wallet> getWalletById(@PathVariable String walletId,@NonNull HttpServletRequest request) {
+        final String authHeader = request.getHeader(JWT_HEADER);
+        String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+        User userDetails = jwtService.extractUser(jwtToken);
+        UUID uid = userDetails.getId();
+        Wallet wallet = walletService.findByUserId(uid);
+        if (wallet != null && wallet.getWalletId().equals(walletId)) {
             return ResponseEntity.ok(wallet);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

@@ -115,28 +115,38 @@ public class WalletControllerTest {
 
     @Test
     public void testGetWalletById() throws Exception {
+        UUID userId = UUID.fromString(USER_ID);
         Wallet wallet = new Wallet();
         wallet.setWalletId("wallet-id");
-        wallet.setUserId(UUID.fromString(USER_ID));
+        wallet.setUserId(userId);
 
-        when(walletService.getWalletById("wallet-id")).thenReturn(wallet);
+        User user = new User();
+        user.setId(userId);
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
+        when(walletService.findByUserId(userId)).thenReturn(wallet);
 
         mockMvc.perform(get("/wallet/get/wallet-id")
                         .header("Authorization", JWT_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.walletId").value(wallet.getWalletId()));
 
-        verify(walletService, times(1)).getWalletById("wallet-id");
+        verify(walletService, times(1)).findByUserId(userId);
     }
 
     @Test
     public void testGetWalletByIdNotFound() throws Exception {
-        when(walletService.getWalletById("wallet-id")).thenReturn(null);
+        UUID userId = UUID.fromString(USER_ID);
+        User user = new User();
+        user.setId(userId);
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
+        when(walletService.findByUserId(userId)).thenReturn(null);
 
         mockMvc.perform(get("/wallet/get/wallet-id")
                         .header("Authorization", JWT_TOKEN))
                 .andExpect(status().isNotFound());
 
-        verify(walletService, times(1)).getWalletById("wallet-id");
+        verify(walletService, times(1)).findByUserId(userId);
     }
 }
