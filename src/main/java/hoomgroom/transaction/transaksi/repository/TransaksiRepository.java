@@ -13,4 +13,16 @@ import java.util.List;
 @Repository
 public interface TransaksiRepository extends JpaRepository<Transaksi, UUID> {
     Optional<Transaksi> findById(@NonNull UUID transaksiId);
+
+    @Query("SELECT t FROM Transaksi t WHERE t.username = :username ORDER BY t.createdAt DESC")
+    List<Transaksi> findByUsernameOrderByTransactionTimeDesc(@Param("username") String username);
+
+    @Query("SELECT t FROM Transaksi t WHERE t.username = :username ORDER BY t.createdAt ASC")
+    List<Transaksi> findByUsernameOrderByTransactionTimeAsc(@Param("username") String username);
+
+    @Query("SELECT t FROM Transaksi t WHERE t.username = :username ORDER BY t.finalPrice DESC")
+    List<Transaksi> findByUsernameOrderByFinalPriceDesc(@Param("username") String username);
+
+    @Query("SELECT t FROM Transaksi t WHERE t.username = :username ORDER BY t.finalPrice ASC")
+    List<Transaksi> findByUsernameOrderByFinalPriceAsc(@Param("username") String username);
 }
