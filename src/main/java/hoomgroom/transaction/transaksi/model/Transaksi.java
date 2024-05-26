@@ -50,7 +50,13 @@ public class Transaksi {
     @Column(name = "final_price", updatable = false, nullable = false)
     private Long finalPrice;
 
-    public Transaksi(String username, String produkID, String namaProduk, String linkImage, String promoCode, Long originalPrice, Long discountPrice, Long potonganPromo) {
+    @Column(name = "is_paid", nullable = false)
+    private boolean isPaid;
+
+    @Column(name = "id_wallet", nullable = false)
+    private String idWallet;
+
+    public Transaksi(String username, String produkID, String namaProduk, String linkImage, String promoCode, Long originalPrice, Long discountPrice, Long potonganPromo, String idWallet) {
         this.produkID = produkID;
         this.namaProduk = namaProduk;
         this.linkImage = linkImage;
@@ -60,5 +66,7 @@ public class Transaksi {
         this.discountPrice = discountPrice;
         this.potonganPromo = potonganPromo;
         this.finalPrice = discountPrice - potonganPromo;
+        this.idWallet = idWallet;
+        this.isPaid = false;
     }
 }

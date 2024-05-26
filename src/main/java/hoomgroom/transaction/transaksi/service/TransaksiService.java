@@ -16,4 +16,5 @@ public interface TransaksiService {
     TransaksiData createTransaksi(RequestTransaksiData transaksiData);
     List<TransaksiData> findByFilter(String username, boolean time, boolean isAscending);
     void delete(UUID uuid);
+    void updateTransaksi(UUID transaksiId);
 }

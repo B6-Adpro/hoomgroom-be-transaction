@@ -1,5 +1,7 @@
 package hoomgroom.transaction.controller;
 
+import hoomgroom.transaction.Auth.service.JwtService;
+import hoomgroom.transaction.Auth.model.User;
 import hoomgroom.transaction.transaksi.dto.RequestTransaksiData;
 import hoomgroom.transaction.transaksi.dto.TransaksiData;
 import hoomgroom.transaction.transaksi.service.TransaksiService;
@@ -7,6 +9,7 @@ import hoomgroom.transaction.transaksi.controller.TransaksiController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -35,8 +38,14 @@ public class TransaksiControllerTest {
     @MockBean
     private TransaksiService transaksiService;
 
+    @Mock
+    private JwtService jwtService;
+
     private TransaksiData transaksiData;
     private RequestTransaksiData requestTransaksiData;
+
+    private static final String JWT_TOKEN = "Bearer mock-jwt-token";
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174000";
 
     @BeforeEach
     void setUp() {
@@ -57,7 +66,6 @@ public class TransaksiControllerTest {
         requestTransaksiData.setNamaProduk("WOODEN ECO PANEL");
         requestTransaksiData.setLinkImage("link1");
         requestTransaksiData.setPromoCode("ADPRO123");
-        requestTransaksiData.setUsername("DAVID");
         requestTransaksiData.setOriginalPrice(30000L);
         requestTransaksiData.setDiscountPrice(4000L);
         requestTransaksiData.setPotonganPromo(1000L);
@@ -65,12 +73,18 @@ public class TransaksiControllerTest {
 
     @Test
     void testCreateTransaksi() throws Exception {
+        User user = new User();
+        user.setId(UUID.fromString(USER_ID));
+        user.setUsername("DAVID");
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
         when(transaksiService.createTransaksi(any(RequestTransaksiData.class)))
                 .thenReturn(transaksiData);
 
         MvcResult mvcResult = mockMvc.perform(post("/api/transaksi/create")
+                        .header("Authorization", JWT_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"produkID\": \"ID123\", \"namaProduk\": \"WOODEN ECO PANEL\", \"linkImage\": \"link1\", \"promoCode\": \"ADPRO123\", \"username\": \"DAVID\", \"originalPrice\": 30000, \"discountPrice\": 4000, \"potonganPromo\": 1000 }"))
+                        .content("{ \"produkID\": \"ID123\", \"namaProduk\": \"WOODEN ECO PANEL\", \"linkImage\": \"link1\", \"promoCode\": \"ADPRO123\", \"originalPrice\": 30000, \"discountPrice\": 4000, \"potonganPromo\": 1000 }"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -90,9 +104,15 @@ public class TransaksiControllerTest {
 
     @Test
     void testGetAllTransaksi() throws Exception {
+        User user = new User();
+        user.setId(UUID.fromString(USER_ID));
+        user.setUsername("DAVID");
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
         when(transaksiService.findAll()).thenReturn(Collections.singletonList(transaksiData));
 
-        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/view"))
+        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/view")
+                .header("Authorization", JWT_TOKEN))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -112,11 +132,17 @@ public class TransaksiControllerTest {
 
     @Test
     void testGetTransaksiById() throws Exception {
+        User user = new User();
+        user.setId(UUID.fromString(USER_ID));
+        user.setUsername("DAVID");
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
         when(transaksiService.findById(any(UUID.class))).thenReturn(transaksiData);
 
-        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/view/{id}", transaksiData.getTransaksiId()))
-                .andExpect(request().asyncStarted())
-                .andReturn();
+        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/view/{id}", transaksiData.getTransaksiId())
+                        .header("Authorization", JWT_TOKEN))
+                        .andExpect(request().asyncStarted())
+                        .andReturn();
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.transaksiId").value(transaksiData.getTransaksiId()))
@@ -133,9 +159,14 @@ public class TransaksiControllerTest {
 
     @Test
     void testDeleteTransaksi() throws Exception {
+        User user = new User();
+        user.setId(UUID.fromString(USER_ID));
+        user.setUsername("DAVID");
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
         doNothing().when(transaksiService).delete(any(UUID.class));
 
-        MvcResult mvcResult = mockMvc.perform(delete("/api/transaksi/delete/{id}", transaksiData.getTransaksiId()))
+        MvcResult mvcResult = mockMvc.perform(delete("/api/transaksi/delete/{id}", transaksiData.getTransaksiId()).header("Authorization", JWT_TOKEN))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
@@ -145,6 +176,11 @@ public class TransaksiControllerTest {
 
     @Test
     void testFilterTransaksi() throws Exception {
+        User user = new User();
+        user.setId(UUID.fromString(USER_ID));
+        user.setUsername("DAVID");
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
         List<TransaksiData> filteredTransaksiList = Collections.singletonList(transaksiData);
         when(transaksiService.findByFilter(anyString(), anyBoolean(), anyBoolean()))
                 .thenReturn(filteredTransaksiList);
@@ -153,6 +189,7 @@ public class TransaksiControllerTest {
                         .param("username", "DAVID")
                         .param("time", "true")
                         .param("isAscending", "true")
+                        .header("Authorization", JWT_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(request().asyncStarted())
                         .andReturn();

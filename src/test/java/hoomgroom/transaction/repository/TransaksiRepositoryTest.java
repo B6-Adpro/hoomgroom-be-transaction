@@ -27,10 +27,10 @@ public class TransaksiRepositoryTest {
     @BeforeEach
     void setUp() {
         listTransaksi = new ArrayList<>();
-        Transaksi transaksi1 = new Transaksi("DAVID", "ID123", "WOODEN ECO PANEL", "link1", "ADPRO123", 30000L, 4000L, 1000L);
-        Transaksi transaksi2 = new Transaksi("JOHN", "ID124", "GALVANIZED SQUARE STEEL", "link3", "ADPRO123", 45000L, 4000L, 2000L);
-        Transaksi transaksi3 = new Transaksi("JOHN2", "ID123", "WOODEN ECO PANEL", "link1", "ADPRO123", 30000L, 4000L, 1000L);
-        Transaksi transaksi4 = new Transaksi("DAVID", "ID127", "GALVANIZED SQUARE STEEL ONE PACK", "link4", "ADPRO123", 45000L, 10000L, 5000L);
+        Transaksi transaksi1 = new Transaksi("DAVID", "ID123", "WOODEN ECO PANEL", "link1", "ADPRO123", 30000L, 4000L, 1000L, "a");
+        Transaksi transaksi2 = new Transaksi("JOHN", "ID124", "GALVANIZED SQUARE STEEL", "link3", "ADPRO123", 45000L, 4000L, 2000L, "b");
+        Transaksi transaksi3 = new Transaksi("JOHN2", "ID123", "WOODEN ECO PANEL", "link1", "ADPRO123", 30000L, 4000L, 1000L, "c");
+        Transaksi transaksi4 = new Transaksi("DAVID", "ID127", "GALVANIZED SQUARE STEEL ONE PACK", "link4", "ADPRO123", 45000L, 10000L, 5000L, "d");
         listTransaksi.add(transaksi1);
         listTransaksi.add(transaksi2);
         listTransaksi.add(transaksi3);
@@ -47,6 +47,7 @@ public class TransaksiRepositoryTest {
         assertEquals(transaksi.getOriginalPrice(), findResult.getOriginalPrice());
         assertEquals(transaksi.getDiscountPrice(), findResult.getDiscountPrice());
         assertEquals(transaksi.getPotonganPromo(), findResult.getPotonganPromo());
+        assertEquals(transaksi.getIdWallet(), findResult.getIdWallet());
     }
 
     @Test

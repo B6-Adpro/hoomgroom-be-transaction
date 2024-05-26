@@ -33,17 +33,16 @@ public class TransaksiController {
     public CompletableFuture<ResponseEntity> getAllTransaksi(@NonNull HttpServletRequest request) {
         final String authHeader = request.getHeader(JWT_HEADER);
         if (authHeader == null) {
-            return CompletableFuture.supplyAsync(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
         }
         String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
         User userDetails = jwtService.extractUser(jwtToken);
 
-        String username = userDetails.getUsername();
         Role role = userDetails.getRole();
         if (role == Role.USER) {
-            return CompletableFuture.supplyAsync(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
         }
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(transaksiService.findAll()));
+        return CompletableFuture.completedFuture(ResponseEntity.ok(transaksiService.findAll()));
     }
 
     @RequestMapping(value = "/view/{id}", method = RequestMethod.GET)
@@ -107,9 +106,9 @@ public class TransaksiController {
                 TransaksiData transaksiData = transaksiService.findById(id);
                 if (transaksiData.getUsername().equals(username) || role == Role.ADMIN) {
                     transaksiService.delete(id);
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
                 }
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
             } catch (RuntimeException e) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -119,8 +118,8 @@ public class TransaksiController {
     @RequestMapping(value = "/filter", method = RequestMethod.GET)
     public CompletableFuture<ResponseEntity> filterTransaksi(
             @NonNull HttpServletRequest request,
-            @RequestParam(required = false, defaultValue = "false") boolean time,
-            @RequestParam(required = false, defaultValue = "true") boolean isAscending) {
+            @RequestParam(required = false, defaultValue = "true") boolean time,
+            @RequestParam(required = false, defaultValue = "false") boolean isAscending) {
         final String authHeader = request.getHeader(JWT_HEADER);
         if (authHeader == null) {
             return CompletableFuture.supplyAsync(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
@@ -133,6 +132,34 @@ public class TransaksiController {
             try {
                 List<TransaksiData> filteredTransaksi = transaksiService.findByFilter(username, time, isAscending);
                 return ResponseEntity.ok(filteredTransaksi);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+        });
+    }
+
+    @RequestMapping(value = "/update", method = RequestMethod.PATCH)
+    public CompletableFuture<ResponseEntity> updateTransaksi(
+            @NonNull HttpServletRequest request,
+            @RequestParam(required = true) UUID id) {
+        final String authHeader = request.getHeader(JWT_HEADER);
+        if (authHeader == null) {
+            return CompletableFuture.supplyAsync(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+        }
+        String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+        User userDetails = jwtService.extractUser(jwtToken);
+
+        String username = userDetails.getUsername();
+        Role role = userDetails.getRole();
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                TransaksiData transaksiData = transaksiService.findById(id);
+                if (transaksiData.getUsername().equals(username) || role == Role.ADMIN) {
+                    transaksiService.updateTransaksi(id);
+                    TransaksiData transaksiData1 = transaksiService.findById(id);
+                    return ResponseEntity.ok().body(transaksiData1);
+                }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }

@@ -33,7 +33,7 @@ public class TransaksiServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        transaksi = new Transaksi("username", "produkID", "namaProduk", "linkImage", "promoCode", 100L, 50L, 10L);
+        transaksi = new Transaksi("username", "produkID", "namaProduk", "linkImage", "promoCode", 100L, 50L, 10L, "a");
         transaksi.setTransaksiId(UUID.fromString("b8d05afb-f4ef-4658-a1bd-b0d13e26f624"));
 
         requestTransaksiData = new RequestTransaksiData();

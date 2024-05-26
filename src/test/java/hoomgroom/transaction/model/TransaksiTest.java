@@ -15,6 +15,7 @@ class TransaksiTest {
     private Long originalPrice;
     private Long discountPrice;
     private Long potonganPromo;
+    private String idWallet;
 
     @BeforeEach
     void setUp() {
@@ -26,11 +27,12 @@ class TransaksiTest {
         discountPrice = 30000L;
         potonganPromo = 5000L;
         username = "Adpro123";
+        idWallet = "aabb";
     }
 
     @Test
     void testTransaksiCreate() {
-        Transaksi transaksi = new Transaksi(username, produkID, namaProduk, linkImage, promoCode, originalPrice, discountPrice, potonganPromo);
+        Transaksi transaksi = new Transaksi(username, produkID, namaProduk, linkImage, promoCode, originalPrice, discountPrice, potonganPromo, idWallet);
         assertEquals("aabbcswdf", transaksi.getProdukID());
         assertEquals("Meja IKEA 1 ton untuk anak 50 tahun", transaksi.getNamaProduk());
         assertEquals("inilink", transaksi.getLinkImage());
@@ -39,5 +41,6 @@ class TransaksiTest {
         assertEquals(30000L, transaksi.getDiscountPrice());
         assertEquals(5000L, transaksi.getPotonganPromo());
         assertEquals(25000L, transaksi.getFinalPrice());
+        assertEquals("aabb", transaksi.getIdWallet());
     }
 }
