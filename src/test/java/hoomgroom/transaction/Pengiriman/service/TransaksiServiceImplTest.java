@@ -1,4 +1,4 @@
-package hoomgroom.transaction.service;
+package hoomgroom.transaction.Pengiriman.service;
 
 import hoomgroom.transaction.transaksi.model.Transaksi;
 import hoomgroom.transaction.transaksi.service.TransaksiServiceImpl;

@@ -52,11 +52,24 @@ public class PengirimanController {
 
     @Async
     @RequestMapping(value = "/pengiriman/{id}", method = RequestMethod.GET)
-    public CompletableFuture<ResponseEntity> getPengirimanById(@PathVariable long id) {
+    public CompletableFuture<ResponseEntity> getPengirimanById(@PathVariable long id, HttpServletRequest request) {
+        final String authHeader = request.getHeader(JWT_HEADER);
+        if (authHeader == null) {
+            return CompletableFuture.supplyAsync(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+        }
+        String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+        User userDetails = jwtService.extractUser(jwtToken);
+
+        String userId = userDetails.getId().toString();
+        Role role = userDetails.getRole();
         ResponseEntity responseEntity = null;
         try {
-            pengirimanService.getPengirimanById(id);
-            responseEntity = ResponseEntity.ok().body(pengirimanService.getPengirimanById(id));
+            String user = pengirimanService.getPengirimanById(id).get().getUser();
+            if (user.equals(userId) || role == Role.ADMIN) {
+                responseEntity = ResponseEntity.ok().body(pengirimanService.getPengirimanById(id));
+                return CompletableFuture.completedFuture(responseEntity);
+            }
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
         } catch (Exception e) {
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
         }
@@ -72,7 +85,6 @@ public class PengirimanController {
         }
         String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
         User userDetails = jwtService.extractUser(jwtToken);
-        System.out.println(userDetails);
         UUID user = userDetails.getId();
         ResponseEntity responseEntity = null;
         try {
@@ -87,11 +99,23 @@ public class PengirimanController {
 
     @Async
     @RequestMapping(value = "/pengiriman/update/{id}", method = RequestMethod.PUT)
-    public CompletableFuture<ResponseEntity> updateStatePengiriman(@PathVariable Long id,@RequestBody PengirimanUpdateRequest request) {
+    public CompletableFuture<ResponseEntity> updateStatePengiriman(@PathVariable Long id,@RequestBody PengirimanUpdateRequest request, HttpServletRequest httpRequest) {
+        final String authHeader = httpRequest.getHeader(JWT_HEADER);
+        if (authHeader == null) {
+            return CompletableFuture.supplyAsync(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+        }
+        String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+        User userDetails = jwtService.extractUser(jwtToken);
+        Role role = userDetails.getRole();
         ResponseEntity responseEntity = null;
         try {
-            pengirimanService.updatePengiriman(id, request);
-            responseEntity = ResponseEntity.ok().build();
+            PengirimanData pengiriman = pengirimanService.getPengirimanById(id).get();
+            if (role == Role.ADMIN && !pengiriman.getStateString().equals("TELAH_TIBA")) {
+                pengirimanService.updatePengiriman(id, request);
+                responseEntity = ResponseEntity.ok().build();
+                return CompletableFuture.completedFuture(responseEntity);
+            }
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
         } catch (Exception e) {
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
         }

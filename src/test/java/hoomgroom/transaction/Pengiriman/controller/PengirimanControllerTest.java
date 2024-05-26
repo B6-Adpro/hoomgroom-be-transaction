@@ -41,7 +41,7 @@ public class PengirimanControllerTest {
 
     @BeforeEach
     void setUp() {
-        pengirimanData = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
+        pengirimanData = new PengirimanData("", "1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
         pengiriman = Pengiriman.builder()
                 .transaksiId("T123")
                 .alamatPengiriman("Some Address")
@@ -78,11 +78,11 @@ public class PengirimanControllerTest {
 
     @Test
     void testCreatePengiriman() throws Exception {
-        when(pengirimanService.createPengiriman(any(Pengiriman.class))).thenReturn(pengiriman);
+        when(pengirimanService.createPengiriman(any(Pengiriman.class), "")).thenReturn(pengiriman);
 
         MvcResult mvcResult = mockMvc.perform(post("/pengiriman/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"transaksiId\": \"T123\", \"alamatPengiriman\": \"Some Address\", \"furniturePengiriman\": \"Some Furniture\", \"stateString\": \"VERIFIKASI\" }"))
+                        .content("{ \"transaksiId\": \"T123\", \"user\":\"Some User\", \"alamatPengiriman\": \"Some Address\", \"furniturePengiriman\": \"Some Furniture\", \"stateString\": \"VERIFIKASI\" }"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 

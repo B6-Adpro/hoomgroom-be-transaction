@@ -59,7 +59,7 @@ public class PengirimanDataTest {
 
     @Test
     void testPengirimanDataAllArgsConstructor() {
-        PengirimanData pengirimanDataAllArgs = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
+        PengirimanData pengirimanDataAllArgs = new PengirimanData("1", "T123", "", "Some Address", "Some Furniture", "VERIFIKASI", null);
 
         assertThat(pengirimanDataAllArgs.getId()).isEqualTo("1");
         assertThat(pengirimanDataAllArgs.getTransaksiId()).isEqualTo("T123");
@@ -77,8 +77,8 @@ public class PengirimanDataTest {
 
     @Test
     void testPengirimanDataEqualsAndHashCode() {
-        PengirimanData pengirimanData1 = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
-        PengirimanData pengirimanData2 = new PengirimanData("1", "T123", "Some Address", "Some Furniture", "VERIFIKASI", null);
+        PengirimanData pengirimanData1 = new PengirimanData("1", "T123", "","Some Address", "Some Furniture", "VERIFIKASI", null);
+        PengirimanData pengirimanData2 = new PengirimanData("1", "T123", "","Some Address", "Some Furniture", "VERIFIKASI", null);
 
         assertThat(pengirimanData1).isEqualTo(pengirimanData2);
         assertThat(pengirimanData1.hashCode()).isEqualTo(pengirimanData2.hashCode());

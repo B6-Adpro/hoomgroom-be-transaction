@@ -27,7 +27,7 @@ public class PengirimanServiceTest {
     @Test
     void testCreatePengiriman() {
         Pengiriman pengiriman = new Pengiriman();
-        pengirimanService.createPengiriman(pengiriman);
+        pengirimanService.createPengiriman(pengiriman, "");
         verify(pengirimanRepository, times(1)).save(any(Pengiriman.class));
     }
 

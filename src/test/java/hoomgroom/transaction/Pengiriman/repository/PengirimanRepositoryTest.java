@@ -47,7 +47,7 @@ public class PengirimanRepositoryTest {
         when(pengirimanRepository.save(any(Pengiriman.class))).thenReturn(pengiriman);
 
         // Act
-        Pengiriman createdPengiriman = pengirimanService.createPengiriman(pengiriman);
+        Pengiriman createdPengiriman = pengirimanService.createPengiriman(pengiriman, "");
 
         // Assert
         assertNotNull(createdPengiriman);
