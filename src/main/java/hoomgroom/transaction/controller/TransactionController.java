@@ -10,4 +10,9 @@ public class TransactionController {
     public String transaction() {
         return "transaction";
     }
+
+    @GetMapping("/wallet")
+    public String getWalletPage() {
+        return "walletPage"; // This corresponds to wallet.html in src/main/resources/static
+    }
 }
