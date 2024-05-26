@@ -158,8 +158,7 @@ public class TransaksiControllerTest {
                         .andReturn();
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].transaksiId").exists())  // Check if transaksiId exists in the response
-                // Add more assertions as needed for other fields in TransaksiData
+                .andExpect(jsonPath("$[0].transaksiId").exists())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isNotEmpty());
     }
