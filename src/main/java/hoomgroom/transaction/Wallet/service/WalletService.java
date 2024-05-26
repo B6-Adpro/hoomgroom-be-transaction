@@ -1,13 +1,18 @@
 package hoomgroom.transaction.Wallet.service;
 
+import hoomgroom.transaction.Wallet.controller.WalletController;
 import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Setter
@@ -25,17 +30,25 @@ public class WalletService {
     }
 
     private TopUpStrategy strategy;
-    public Wallet add(UUID userId) {
+    @Async("taskExecutor")
+    public CompletableFuture<Wallet> add(UUID userId) {
+        Logger logger = LoggerFactory.getLogger(WalletService.class);
+        logger.info("testService");
         Wallet existingWallet = walletRepository.findByUserId(userId);
+        logger.info("found");
         if (existingWallet != null) {
             throw new IllegalStateException("Wallet for user already exists");
         }
 
         Wallet wallet = new Wallet(userId);
-        return walletRepository.save(wallet);
+        logger.info("newwallet");
+        Wallet savedWallet = walletRepository.save(wallet);
+        logger.info("created");
+        return CompletableFuture.completedFuture(savedWallet);
     }
 
-    public void topUp(String walletId, double amount) {
+    @Async("taskExecutor")
+    public CompletableFuture<Void> topUp(String walletId, double amount) {
         if (strategy == null) {
             throw new IllegalArgumentException("TopUp strategy is not set");
         }
@@ -45,6 +58,7 @@ public class WalletService {
         }
 
         strategy.topUp(walletId, amount);
+        return CompletableFuture.completedFuture(null);
     }
 
     public Wallet findByUserId(UUID uid) {

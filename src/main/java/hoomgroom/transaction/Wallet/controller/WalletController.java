@@ -9,6 +9,8 @@ import hoomgroom.transaction.Wallet.service.WalletService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/wallet")
@@ -32,65 +35,75 @@ public class WalletController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Wallet> createWallet(@NonNull HttpServletRequest request) {
+    public CompletableFuture<ResponseEntity<?>> createWallet(@NonNull HttpServletRequest request) {
+        Logger logger = LoggerFactory.getLogger(WalletController.class);
+        logger.info("test");
         final String authHeader = request.getHeader(JWT_HEADER);
+        if (authHeader == null) {
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+        }
         String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
         User userDetails = jwtService.extractUser(jwtToken);
-        UUID uid = userDetails.getId();
 
-        // Check if a wallet already exists for the user
+        UUID uid = userDetails.getId();
+        logger.info(uid.toString());
+
         Wallet existingWallet = walletService.findByUserId(uid);
         if (existingWallet != null) {
-            // If a wallet already exists, return a conflict response
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(existingWallet);
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.CONFLICT).body(existingWallet));
         }
 
-        // If no existing wallet, create a new one
-        Wallet wallet = walletService.add(uid);
-        return ResponseEntity.status(HttpStatus.CREATED).body(wallet);
+        return walletService.add(uid).thenApply(wallet -> ResponseEntity.status(HttpStatus.CREATED).body(wallet));
     }
 
     @PostMapping("/topup")
-    public ResponseEntity<String> topUpWallet(@RequestBody TopUpRequest request) {
+    public CompletableFuture<ResponseEntity<String>> topUpWallet(@NonNull HttpServletRequest request, @RequestBody TopUpRequest topUpRequest) {
         try {
+            final String authHeader = request.getHeader(JWT_HEADER);
+            if (authHeader == null) {
+                return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+            }
+            String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+            User userDetails = jwtService.extractUser(jwtToken);
+            UUID uid = userDetails.getId();
+            Wallet wallet = walletService.findByUserId(uid);
             TopUpStrategy strategy;
-            if ("Credit Card".equals(request.getStrategy())) {
+            if ("Credit Card".equals(topUpRequest.getStrategy())) {
                 TopUpByCreditCard creditCardStrategy = new TopUpByCreditCard(walletService.getWalletRepository());
-                creditCardStrategy.setCardNumber(request.getCardNumber());
+                creditCardStrategy.setCardNumber(topUpRequest.getCardNumber());
                 strategy = creditCardStrategy;
-            } else if ("E-Wallet".equals(request.getStrategy())) {
+            } else if ("E-Wallet".equals(topUpRequest.getStrategy())) {
                 TopUpByEWallet eWalletStrategy = new TopUpByEWallet(walletService.getWalletRepository());
-                eWalletStrategy.setPhoneNumber(request.getPhoneNumber());
+                eWalletStrategy.setPhoneNumber(topUpRequest.getPhoneNumber());
                 strategy = eWalletStrategy;
             } else {
-                return ResponseEntity.badRequest().body("Invalid top-up strategy");
+                return CompletableFuture.completedFuture(ResponseEntity.badRequest().body("Invalid top-up strategy"));
             }
             // Set the strategy in the service
             walletService.setStrategy(strategy);
             // Perform the top-up operation
-            walletService.topUp(request.getWalletId(), request.getAmount());
-
-            return ResponseEntity.ok("Wallet topped up successfully.");
+            return walletService.topUp(wallet.getWalletId(), topUpRequest.getAmount())
+                    .thenApply(result -> ResponseEntity.ok("Wallet topped up successfully."))
+                    .exceptionally(ex -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request."));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
-        } finally {
-            walletService.setStrategy(null); // Clear the top-up strategy after usage
+            return CompletableFuture.completedFuture(ResponseEntity.badRequest().body(e.getMessage()));
         }
     }
 
     @GetMapping("/get/{walletId}")
-    public ResponseEntity<Wallet> getWalletById(@PathVariable String walletId,@NonNull HttpServletRequest request) {
+    public CompletableFuture<ResponseEntity<?>> getWalletById(@PathVariable String walletId, @NonNull HttpServletRequest request) {
         final String authHeader = request.getHeader(JWT_HEADER);
+        if (authHeader == null) {
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+        }
         String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
         User userDetails = jwtService.extractUser(jwtToken);
         UUID uid = userDetails.getId();
         Wallet wallet = walletService.findByUserId(uid);
         if (wallet != null && wallet.getWalletId().equals(walletId)) {
-            return ResponseEntity.ok(wallet);
+            return CompletableFuture.completedFuture(ResponseEntity.ok(wallet));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
         }
     }
 
