@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,15 +37,7 @@ public class TransaksiRepositoryTest {
         listTransaksi.add(transaksi4);
     }
 
-    @Test
-    void testSave() {
-        Transaksi transaksi = listTransaksi.get(1);
-
-        transaksiRepository.save(transaksi);
-        Optional<Transaksi> findResultTransaksi = transaksiRepository.findById(listTransaksi.get(1).getTransaksiId());
-        assertTrue(findResultTransaksi.isPresent());
-
-        Transaksi findResult = findResultTransaksi.get();
+    void checkTransaksi(Transaksi transaksi, Transaksi findResult) {
         assertEquals(transaksi.getTransaksiId(), findResult.getTransaksiId());
         assertEquals(transaksi.getProdukID(), findResult.getProdukID());
         assertEquals(transaksi.getNamaProduk(), findResult.getNamaProduk());
@@ -54,5 +47,119 @@ public class TransaksiRepositoryTest {
         assertEquals(transaksi.getOriginalPrice(), findResult.getOriginalPrice());
         assertEquals(transaksi.getDiscountPrice(), findResult.getDiscountPrice());
         assertEquals(transaksi.getPotonganPromo(), findResult.getPotonganPromo());
+    }
+
+    @Test
+    void testSave() {
+        Transaksi transaksi = listTransaksi.get(1);
+
+        transaksiRepository.save(transaksi);
+        Optional<Transaksi> findResultTransaksi = transaksiRepository.findById(listTransaksi.get(1).getTransaksiId());
+        assertTrue(findResultTransaksi.isPresent());
+
+        Transaksi findResult = findResultTransaksi.get();
+        checkTransaksi(transaksi, findResult);
+    }
+
+    @Test
+    public void testFindByIdIfIdFound() {
+        transaksiRepository.saveAll(listTransaksi);
+
+        Transaksi transaksi = listTransaksi.get(2);
+
+        Optional<Transaksi> findResultTransaksi = transaksiRepository.findById(listTransaksi.get(2).getTransaksiId());
+        assertTrue(findResultTransaksi.isPresent());
+
+        Transaksi findResult = findResultTransaksi.get();
+        checkTransaksi(transaksi, findResult);
+    }
+
+    @Test
+    public void testFindByIdIfIdNotFound() {
+        Optional<Transaksi> findResultTransaksi = transaksiRepository.findById(UUID.randomUUID());
+        assertTrue(findResultTransaksi.isEmpty());
+    }
+
+    @Test
+    public void testFindAll() {
+        transaksiRepository.saveAll(listTransaksi);
+        List<Transaksi> findResult = transaksiRepository.findAll();
+        assertEquals(4, findResult.size());
+    }
+
+    @Test
+    public void testFindByUsernameTimeDesc() {
+        transaksiRepository.saveAll(listTransaksi);
+        List<Transaksi> findResultList = transaksiRepository.findByUsernameOrderByTransactionTimeDesc("DAVID");
+        assertEquals(2, findResultList.size());
+
+        Transaksi transaksi = listTransaksi.get(3);
+        Transaksi findResult = findResultList.get(0);
+        checkTransaksi(transaksi, findResult);
+
+        transaksi = listTransaksi.get(0);
+        findResult = findResultList.get(1);
+        checkTransaksi(transaksi, findResult);
+    }
+
+    @Test
+    public void testFindByUsernameTimeAsc() {
+        transaksiRepository.saveAll(listTransaksi);
+        List<Transaksi> findResultList = transaksiRepository.findByUsernameOrderByTransactionTimeAsc("DAVID");
+        assertEquals(2, findResultList.size());
+
+        Transaksi transaksi = listTransaksi.get(0);
+        Transaksi findResult = findResultList.get(0);
+        checkTransaksi(transaksi, findResult);
+
+        transaksi = listTransaksi.get(3);
+        findResult = findResultList.get(1);
+        checkTransaksi(transaksi, findResult);
+    }
+
+    @Test
+    public void testFindByUsernamePriceAsc() {
+        transaksiRepository.saveAll(listTransaksi);
+        List<Transaksi> findResultList = transaksiRepository.findByUsernameOrderByFinalPriceAsc("DAVID");
+        assertEquals(2, findResultList.size());
+
+        Transaksi transaksi = listTransaksi.get(0);
+        Transaksi findResult = findResultList.get(0);
+        checkTransaksi(transaksi, findResult);
+
+        transaksi = listTransaksi.get(3);
+        findResult = findResultList.get(1);
+        checkTransaksi(transaksi, findResult);
+    }
+
+    @Test
+    public void testFindByUsernamePriceDesc() {
+        transaksiRepository.saveAll(listTransaksi);
+        List<Transaksi> findResultList = transaksiRepository.findByUsernameOrderByFinalPriceDesc("DAVID");
+        assertEquals(2, findResultList.size());
+
+        Transaksi transaksi = listTransaksi.get(3);
+        Transaksi findResult = findResultList.get(0);
+        checkTransaksi(transaksi, findResult);
+
+        transaksi = listTransaksi.get(0);
+        findResult = findResultList.get(1);
+        checkTransaksi(transaksi, findResult);
+    }
+
+    @Test
+    public void testUsernameNotFound() {
+        transaksiRepository.saveAll(listTransaksi);
+        List<Transaksi> findResultList = transaksiRepository.findByUsernameOrderByFinalPriceAsc("DAVID11");
+        assertEquals(0, findResultList.size());
+
+        findResultList = transaksiRepository.findByUsernameOrderByFinalPriceDesc("DAVID11");
+        assertEquals(0, findResultList.size());
+
+        findResultList = transaksiRepository.findByUsernameOrderByTransactionTimeAsc("DAVID11");
+        assertEquals(0, findResultList.size());
+
+        findResultList = transaksiRepository.findByUsernameOrderByTransactionTimeDesc("DAVID11");
+        assertEquals(0, findResultList.size());
     }
 }
