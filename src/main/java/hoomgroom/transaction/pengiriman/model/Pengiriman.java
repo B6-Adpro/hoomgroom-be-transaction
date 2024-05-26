@@ -24,6 +24,9 @@ public class Pengiriman {
     @Id @Column(name = "id_pengiriman",updatable = false, nullable = false)
     Long pengirimanId;
 
+    @Column(name = "user")
+    String userPengiriman;
+
     @Column(name = "alamat_pengiriman")
     String alamatPengiriman;
 

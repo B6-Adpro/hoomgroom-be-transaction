@@ -21,8 +21,9 @@ import java.util.stream.Collectors;
 public class PengirimanService {
     @Autowired
     private PengirimanRepository pengirimanRepository;
-    public Pengiriman createPengiriman(Pengiriman pengiriman){
+    public Pengiriman createPengiriman(Pengiriman pengiriman, String user){
         Pengiriman newPengiriman = pengiriman.builder()
+                .userPengiriman(user)
                 .transaksiId(pengiriman.getTransaksiId())
                 .alamatPengiriman(pengiriman.getAlamatPengiriman())
                 .furniturePengiriman(pengiriman.getFurniturePengiriman())
