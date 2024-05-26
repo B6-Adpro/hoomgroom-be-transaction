@@ -64,4 +64,21 @@ public class WalletService {
     public Wallet findByUserId(UUID uid) {
         return walletRepository.findByUserId(uid);
     }
+
+    @Async("taskExecutor")
+    public CompletableFuture<String> pay(UUID userId, double amount) {
+        Wallet wallet = walletRepository.findByUserId(userId);
+        if (wallet == null) {
+            return CompletableFuture.completedFuture("Wallet not found");
+        }
+
+        if (wallet.getBalance() < amount) {
+            return CompletableFuture.completedFuture("Balance is not enough");
+        }
+
+        wallet.setBalance(wallet.getBalance() - amount);
+        walletRepository.save(wallet);
+
+        return CompletableFuture.completedFuture("Payment successful");
+    }
 }

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hoomgroom.transaction.Auth.model.User;
 import hoomgroom.transaction.Auth.service.JwtService;
 import hoomgroom.transaction.Wallet.model.Wallet;
-import hoomgroom.transaction.Wallet.service.TopUpByCreditCard;
-import hoomgroom.transaction.Wallet.service.TopUpByEWallet;
 import hoomgroom.transaction.Wallet.service.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,6 +30,7 @@ public class WalletControllerTest {
 
     @InjectMocks
     private WalletController walletController;
+
     @Mock
     private JwtService jwtService;
 
@@ -43,7 +44,7 @@ public class WalletControllerTest {
 
     @BeforeEach
     public void setup() {
-        walletController.jwtService = jwtService;
+        walletController.jwtService=jwtService;
         mockMvc = MockMvcBuilders.standaloneSetup(walletController).build();
     }
 
@@ -59,7 +60,7 @@ public class WalletControllerTest {
 
         when(jwtService.extractUser(any(String.class))).thenReturn(user);
         when(walletService.findByUserId(userId)).thenReturn(null);
-        when(walletService.add(userId)).thenReturn(wallet);
+        when(walletService.add(userId)).thenReturn(CompletableFuture.completedFuture(wallet));
 
         mockMvc.perform(post("/wallet/create")
                         .header("Authorization", JWT_TOKEN))
@@ -101,7 +102,18 @@ public class WalletControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String requestJson = objectMapper.writeValueAsString(topUpRequest);
 
-        doNothing().when(walletService).topUp(anyString(), anyDouble());
+        UUID userId = UUID.fromString(USER_ID);
+        User user = new User();
+        user.setId(userId);
+
+        Wallet wallet = new Wallet();
+        wallet.setWalletId("wallet-id");
+        wallet.setUserId(userId);
+
+        when(jwtService.extractUser(any(String.class))).thenReturn(user);
+        when(walletService.findByUserId(userId)).thenReturn(wallet);
+        doNothing().when(walletService).setStrategy(any());
+        when(walletService.topUp(anyString(), anyDouble())).thenReturn(CompletableFuture.completedFuture(null));
 
         mockMvc.perform(post("/wallet/topup")
                         .header("Authorization", JWT_TOKEN)
