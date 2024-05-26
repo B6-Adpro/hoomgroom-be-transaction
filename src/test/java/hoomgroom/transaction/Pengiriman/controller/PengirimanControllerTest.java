@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -51,7 +52,7 @@ public class PengirimanControllerTest {
 
     @Test
     void testGetAllPengiriman() throws Exception {
-        when(pengirimanService.getAllPengiriman()).thenReturn(Arrays.asList(pengirimanData));
+        when(pengirimanService.getAllPengiriman()).thenReturn(Collections.singletonList(pengirimanData));
 
         MvcResult mvcResult = mockMvc.perform(get("/pengiriman/view"))
                 .andExpect(request().asyncStarted())
