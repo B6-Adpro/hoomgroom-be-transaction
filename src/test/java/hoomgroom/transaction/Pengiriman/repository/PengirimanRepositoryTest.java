@@ -1,6 +1,7 @@
-package hoomgroom.transaction.repository;
+package hoomgroom.transaction.Pengiriman.repository;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
+import hoomgroom.transaction.pengiriman.dto.PengirimanUpdateRequest;
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 import hoomgroom.transaction.pengiriman.repository.PengirimanRepository;
 import hoomgroom.transaction.pengiriman.service.PengirimanService;
@@ -36,7 +37,7 @@ public class PengirimanRepositoryTest {
                 .transaksiId("1")
                 .alamatPengiriman("Test Address")
                 .furniturePengiriman("Test Furniture")
-                .stateString("DALAM_PROSES")
+                .stateString("VERIFIKASI")
                 .build();
     }
 
@@ -46,7 +47,7 @@ public class PengirimanRepositoryTest {
         when(pengirimanRepository.save(any(Pengiriman.class))).thenReturn(pengiriman);
 
         // Act
-        Pengiriman createdPengiriman = pengirimanService.createPengiriman(pengiriman);
+        Pengiriman createdPengiriman = pengirimanService.createPengiriman(pengiriman, "");
 
         // Assert
         assertNotNull(createdPengiriman);
@@ -85,9 +86,9 @@ public class PengirimanRepositoryTest {
         when(pengirimanRepository.findById(1L)).thenReturn(Optional.of(pengiriman));
         when(pengirimanRepository.save(any(Pengiriman.class))).thenReturn(pengiriman);
 
-        pengirimanService.updatePengiriman(1L);
+        pengirimanService.updatePengiriman(1L, new PengirimanUpdateRequest());
 
-        assertEquals("SEDANG_DIKEMAS", pengiriman.getStateString());
+        assertEquals("SEDANG_DIPROSES", pengiriman.getStateString());
         verify(pengirimanRepository, times(1)).findById(1L);
         verify(pengirimanRepository, times(1)).save(pengiriman);
     }
@@ -97,9 +98,9 @@ public class PengirimanRepositoryTest {
         when(pengirimanRepository.findById(1L)).thenReturn(Optional.of(pengiriman));
         when(pengirimanRepository.save(any(Pengiriman.class))).thenReturn(pengiriman);
 
-        pengirimanService.updatePengiriman(1L);
-        pengirimanService.updatePengiriman(1L);
-        pengirimanService.updatePengiriman(1L);
+        pengirimanService.updatePengiriman(1L, new PengirimanUpdateRequest());
+        pengirimanService.updatePengiriman(1L, new PengirimanUpdateRequest());
+        pengirimanService.updatePengiriman(1L, new PengirimanUpdateRequest());
 
 
         assertEquals("TELAH_TIBA", pengiriman.getStateString());

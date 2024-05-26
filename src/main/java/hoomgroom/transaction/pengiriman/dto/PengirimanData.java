@@ -15,8 +15,10 @@ import lombok.Getter;
 @Setter @Getter
 public class PengirimanData {
     private String id;
+    private String user;
     private String transaksiId;
     private String alamat;
     private String furniture;
     private String stateString;
+    private String metodeTransportasi;
 }

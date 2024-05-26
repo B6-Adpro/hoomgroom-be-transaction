@@ -1,6 +1,8 @@
 package hoomgroom.transaction.pengiriman.service;
 
 import hoomgroom.transaction.pengiriman.dto.PengirimanData;
+import hoomgroom.transaction.pengiriman.dto.PengirimanUpdateRequest;
+import hoomgroom.transaction.pengiriman.enums.PengirimanStatus;
 import hoomgroom.transaction.pengiriman.model.Pengiriman;
 
 import hoomgroom.transaction.pengiriman.repository.PengirimanRepository;
@@ -19,8 +21,9 @@ import java.util.stream.Collectors;
 public class PengirimanService {
     @Autowired
     private PengirimanRepository pengirimanRepository;
-    public Pengiriman createPengiriman(Pengiriman pengiriman){
+    public Pengiriman createPengiriman(Pengiriman pengiriman, String user){
         Pengiriman newPengiriman = pengiriman.builder()
+                .userPengiriman(user)
                 .transaksiId(pengiriman.getTransaksiId())
                 .alamatPengiriman(pengiriman.getAlamatPengiriman())
                 .furniturePengiriman(pengiriman.getFurniturePengiriman())
@@ -51,26 +54,32 @@ public class PengirimanService {
         return pengirimanDTO;
     }
 
-    public void updatePengiriman(Long id) {
+    public void updatePengiriman(Long id, PengirimanUpdateRequest request) {
         Optional<Pengiriman> pengirimanOptional = pengirimanRepository.findById(id);
         if (pengirimanOptional.isPresent()) {
-        Pengiriman pengiriman = pengirimanOptional.get();
+            Pengiriman pengiriman = pengirimanOptional.get();
             switch (pengiriman.getStateString()) {
-                case "DALAM_PROSES" -> {
+                case "VERIFIKASI" -> {
                     pengiriman.setState(new PackagingState());
-                    pengiriman.setStateString("SEDANG_DIKEMAS");
+                    pengiriman.setStateString(PengirimanStatus.SEDANG_DIPROSES.getValue());
                 }
-                case "SEDANG_DIKEMAS" -> {
+                case "SEDANG_DIPROSES" -> {
+                    pengiriman.setMetodeTransportasi(request.getMetodePengiriman());
                     pengiriman.setState(new ShippingState());
-                    pengiriman.setStateString("SEDANG_DIKIRIM");
+                    pengiriman.setStateString(PengirimanStatus.SEDANG_DIKIRIM.getValue());
                 }
                 case "SEDANG_DIKIRIM" -> {
                     pengiriman.setState(new ArrivedState());
-                    pengiriman.setStateString("TELAH_TIBA");
+                    pengiriman.setStateString(PengirimanStatus.TELAH_TIBA.getValue());
+                }
+                case "DITERIMA" -> {
+                    pengiriman.setStateString(PengirimanStatus.DITERIMA.getValue());
                 }
             }
             pengirimanRepository.save(pengiriman);
-        } else { throw new RuntimeException("Pengiriman with id " + id + " not found"); }
+        } else {
+            throw new RuntimeException("Pengiriman with id " + id + " not found");
+        }
     }
 
     public void deletePengiriman(Long id) {
