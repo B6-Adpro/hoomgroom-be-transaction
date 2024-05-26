@@ -63,7 +63,7 @@ public class WalletServiceTest {
     void testAddWallet() {
         when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
 
-        Wallet createdWallet = walletService.add(UUID.randomUUID());
+        Wallet createdWallet = walletService.add(UUID.randomUUID()).join();
 
         assertNotNull(createdWallet);
         verify(walletRepository, times(1)).save(any(Wallet.class));
