@@ -60,12 +60,12 @@ public class PengirimanController {
         String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
         User userDetails = jwtService.extractUser(jwtToken);
 
-        String userId = userDetails.getId().toString();
+        String username = userDetails.getUsername();
         Role role = userDetails.getRole();
         ResponseEntity responseEntity = null;
         try {
             String user = pengirimanService.getPengirimanById(id).get().getUser();
-            if (user.equals(userId) || role == Role.ADMIN) {
+            if (user.equals(username) || role == Role.ADMIN) {
                 responseEntity = ResponseEntity.ok().body(pengirimanService.getPengirimanById(id));
                 return CompletableFuture.completedFuture(responseEntity);
             }
@@ -106,16 +106,12 @@ public class PengirimanController {
         }
         String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
         User userDetails = jwtService.extractUser(jwtToken);
-        Role role = userDetails.getRole();
+        UUID user = userDetails.getId();
         ResponseEntity responseEntity = null;
         try {
-            PengirimanData pengiriman = pengirimanService.getPengirimanById(id).get();
-            if (role == Role.ADMIN && !pengiriman.getStateString().equals("TELAH_TIBA")) {
-                pengirimanService.updatePengiriman(id, request);
-                responseEntity = ResponseEntity.ok().build();
-                return CompletableFuture.completedFuture(responseEntity);
-            }
-            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+            pengirimanService.updatePengiriman(id, request);
+
+            responseEntity = ResponseEntity.ok().build();
         } catch (Exception e) {
             responseEntity = ResponseEntity.badRequest().body(HttpStatus.BAD_REQUEST);
         }
