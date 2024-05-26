@@ -19,12 +19,14 @@ public class TransaksiServiceImpl implements TransaksiService {
     @Autowired
     private TransaksiRepository transaksiRepository;
 
+    @Override
     public TransaksiData createTransaksi(RequestTransaksiData transaksiData) {
         Transaksi createdTransaksi = convertRequestToTransaksi(transaksiData);
         Transaksi savedTransaksi = transaksiRepository.save(createdTransaksi);
         return convertToDto(savedTransaksi);
     }
 
+    @Override
     public List<TransaksiData> findAll() {
         List<Transaksi> transaksiList = transaksiRepository.findAll();
         System.out.println(transaksiList.size());
@@ -33,6 +35,7 @@ public class TransaksiServiceImpl implements TransaksiService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public TransaksiData findById(@NonNull UUID id) throws NoSuchElementException {
         Optional<Transaksi> transaksi = transaksiRepository.findById(id);
         if (transaksi.isEmpty()){
@@ -41,6 +44,7 @@ public class TransaksiServiceImpl implements TransaksiService {
         return convertToDto(transaksi.get());
     }
 
+    @Override
     public List<TransaksiData> findByFilter(String username, boolean time, boolean isAscending) {
         List<Transaksi> transaksiList;
         if (isAscending) {
@@ -75,10 +79,15 @@ public class TransaksiServiceImpl implements TransaksiService {
         transaksiRepository.delete(transaksi.get());
     }
 
+    @Override
+    public void updateTransaksi(UUID transaksiId) {
+        transaksiRepository.updateTransaksi(transaksiId);
+    }
+
     private Transaksi convertRequestToTransaksi(RequestTransaksiData transaksiData) {
         Transaksi transaksi = new Transaksi(transaksiData.getUsername(), transaksiData.getProdukID(), transaksiData.getNamaProduk(),
                 transaksiData.getLinkImage(), transaksiData.getPromoCode(), transaksiData.getOriginalPrice(), transaksiData.getDiscountPrice(),
-                transaksiData.getPotonganPromo());
+                transaksiData.getPotonganPromo(), transaksiData.getIdWallet());
         return transaksi;
     }
 
@@ -95,6 +104,7 @@ public class TransaksiServiceImpl implements TransaksiService {
         transaksiData.setPotonganPromo(transaksi.getPotonganPromo());
         transaksiData.setFinalPrice(transaksi.getFinalPrice());
         transaksiData.setCreatedAt(transaksi.getCreatedAt());
+        transaksiData.setPaid(transaksi.isPaid());
         return transaksiData;
     }
 }

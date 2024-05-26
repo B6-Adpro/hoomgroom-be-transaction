@@ -20,4 +20,5 @@ public class TransaksiData {
     private Long potonganPromo;
     private LocalDateTime createdAt;
     private Long finalPrice;
+    private boolean isPaid;
 }

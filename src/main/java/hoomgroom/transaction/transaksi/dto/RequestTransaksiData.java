@@ -17,4 +17,5 @@ public class RequestTransaksiData {
     private Long originalPrice;
     private Long discountPrice;
     private Long potonganPromo;
+    private String idWallet;
 }
