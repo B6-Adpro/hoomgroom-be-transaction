@@ -4,30 +4,24 @@ import hoomgroom.transaction.Wallet.model.Wallet;
 import hoomgroom.transaction.Wallet.repository.WalletRepository;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class WalletServiceCreditCard implements WalletService{
+import java.util.Optional;
+
+@Service
+public class TopUpByCreditCard implements TopUpStrategy {
     @Getter
     @Setter
     private String cardNumber;
-    private final WalletRepository walletRepository = new WalletRepository();
+    private final WalletRepository walletRepository;
 
-    @Override
-    public void add(Wallet wallet) {
-        walletRepository.addWallet(wallet);
-    }
-    @Override
-    public Wallet getWalletById(String walletId) {
-        Wallet wallet = walletRepository.findById(walletId);
-        return wallet;
+    @Autowired
+    public TopUpByCreditCard(WalletRepository walletRepository) {
+        this.walletRepository = walletRepository;
     }
 
-    @Override
-    public void topUp(String walletId, double amount) {
-        Wallet wallet = walletRepository.findById(walletId);
-        wallet.setBalance(wallet.getBalance() + amount);
-    }
-
-    public Boolean validateCardNumber(String cardNumber) {
+    public boolean validateTopUpDetails() {
         // Check if cardNumberStr is not null and contains only digits
         if (cardNumber == null || !cardNumber.matches("\\d+")) {
             return false;
@@ -53,5 +47,16 @@ public class WalletServiceCreditCard implements WalletService{
             alternate = !alternate;
         }
         return (sum % 10 == 0);
+    }
+
+    public void topUp(String walletId, double amount) {
+        Optional<Wallet> found = walletRepository.findById(walletId);
+        if (found.isPresent()) {
+            Wallet wallet = found.get();
+            wallet.setBalance(wallet.getBalance() + amount);
+            walletRepository.save(wallet);
+        } else {
+            throw new IllegalArgumentException("Wallet not found");
+        }
     }
 }

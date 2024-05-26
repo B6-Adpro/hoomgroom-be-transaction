@@ -15,8 +15,8 @@ public class WalletTest {
     }
 
     @Test
-    void testGetWalletId() {assertEquals("eb558e9f-1c39-460e-8860-71af6af63bd6", this.wallet.getWalletId());}
-
-    @Test
-    void testGetWalletBalance() {assertEquals(100000, this.wallet.getBalance());}
+    void testGetWalletBalance() {
+        assertEquals(100000, this.wallet.getBalance());
+        assertEquals("eb558e9f-1c39-460e-8860-71af6af63bd6", this.wallet.getWalletId());
+    }
 }
