@@ -1,4 +1,5 @@
 package hoomgroom.transaction.model;
 
-public class transaction {
+public class PengirimanTest {
+    
 }
