@@ -19,12 +19,11 @@ public class Pengiriman {
     @Column(name = "id_transaksi")
     String transaksiId;
 
-
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id @Column(name = "id_pengiriman",updatable = false, nullable = false)
     Long pengirimanId;
 
-    @Column(name = "user")
+    @Column(name = "userId")
     String userPengiriman;
 
     @Column(name = "alamat_pengiriman")
