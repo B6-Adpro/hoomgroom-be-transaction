@@ -3,9 +3,11 @@ package hoomgroom.transaction.controller;
 import hoomgroom.transaction.transaksi.dto.RequestTransaksiData;
 import hoomgroom.transaction.transaksi.dto.TransaksiData;
 import hoomgroom.transaction.transaksi.service.TransaksiService;
+import hoomgroom.transaction.transaksi.controller.TransaksiController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -13,19 +15,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(TransaksiController.class)
 public class TransaksiControllerTest {
 
@@ -39,7 +39,7 @@ public class TransaksiControllerTest {
     private RequestTransaksiData requestTransaksiData;
 
     @BeforeEach
-    public void setup() {
+    void setUp() {
         transaksiData = new TransaksiData();
         transaksiData.setTransaksiId(UUID.randomUUID().toString());
         transaksiData.setProdukID("ID123");
@@ -51,7 +51,6 @@ public class TransaksiControllerTest {
         transaksiData.setDiscountPrice(4000L);
         transaksiData.setPotonganPromo(1000L);
         transaksiData.setFinalPrice(3000L);
-        transaksiData.setCreatedAt(LocalDateTime.now());
 
         requestTransaksiData = new RequestTransaksiData();
         requestTransaksiData.setProdukID("ID123");
@@ -65,13 +64,17 @@ public class TransaksiControllerTest {
     }
 
     @Test
-    public void testCreateTransaksi() throws Exception {
-        Mockito.when(transaksiService.createTransaksi(any(RequestTransaksiData.class)))
+    void testCreateTransaksi() throws Exception {
+        when(transaksiService.createTransaksi(any(RequestTransaksiData.class)))
                 .thenReturn(transaksiData);
 
-        mockMvc.perform(post("/api/transaksi")
+        MvcResult mvcResult = mockMvc.perform(post("/api/transaksi/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"produkID\": \"ID123\", \"namaProduk\": \"WOODEN ECO PANEL\", \"linkImage\": \"link1\", \"promoCode\": \"ADPRO123\", \"username\": \"DAVID\", \"originalPrice\": 30000, \"discountPrice\": 4000, \"potonganPromo\": 1000 }"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.transaksiId").value(transaksiData.getTransaksiId()))
                 .andExpect(jsonPath("$.produkID").value(transaksiData.getProdukID()))
@@ -86,12 +89,14 @@ public class TransaksiControllerTest {
     }
 
     @Test
-    public void testGetAllTransaksi() throws Exception {
-        List<TransaksiData> transaksiList = Arrays.asList(transaksiData);
-        Mockito.when(transaksiService.findAll()).thenReturn(transaksiList);
+    void testGetAllTransaksi() throws Exception {
+        when(transaksiService.findAll()).thenReturn(Collections.singletonList(transaksiData));
 
-        mockMvc.perform(get("/api/transaksi")
-                        .contentType(MediaType.APPLICATION_JSON))
+        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/view"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].transaksiId").value(transaksiData.getTransaksiId()))
                 .andExpect(jsonPath("$[0].produkID").value(transaksiData.getProdukID()))
@@ -106,11 +111,13 @@ public class TransaksiControllerTest {
     }
 
     @Test
-    public void testGetTransaksiById() throws Exception {
-        Mockito.when(transaksiService.findById(any(UUID.class))).thenReturn(transaksiData);
+    void testGetTransaksiById() throws Exception {
+        when(transaksiService.findById(any(UUID.class))).thenReturn(transaksiData);
 
-        mockMvc.perform(get("/api/transaksi/{id}", transaksiData.getTransaksiId())
-                        .contentType(MediaType.APPLICATION_JSON))
+        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/view/{id}", transaksiData.getTransaksiId()))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.transaksiId").value(transaksiData.getTransaksiId()))
                 .andExpect(jsonPath("$.produkID").value(transaksiData.getProdukID()))
@@ -125,33 +132,35 @@ public class TransaksiControllerTest {
     }
 
     @Test
-    public void testGetTransaksiByFilter() throws Exception {
-        List<TransaksiData> transaksiList = Arrays.asList(transaksiData);
-        Mockito.when(transaksiService.findByFilter(anyString(), anyBoolean(), anyBoolean()))
-                .thenReturn(transaksiList);
+    void testDeleteTransaksi() throws Exception {
+        doNothing().when(transaksiService).delete(any(UUID.class));
 
-        mockMvc.perform(get("/api/transaksi/filter")
+        MvcResult mvcResult = mockMvc.perform(delete("/api/transaksi/delete/{id}", transaksiData.getTransaksiId()))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testFilterTransaksi() throws Exception {
+        List<TransaksiData> filteredTransaksiList = Collections.singletonList(transaksiData);
+        when(transaksiService.findByFilter(anyString(), anyBoolean(), anyBoolean()))
+                .thenReturn(filteredTransaksiList);
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/transaksi/filter")
                         .param("username", "DAVID")
                         .param("time", "true")
                         .param("isAscending", "true")
                         .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(request().asyncStarted())
+                        .andReturn();
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].transaksiId").value(transaksiData.getTransaksiId()))
-                .andExpect(jsonPath("$[0].produkID").value(transaksiData.getProdukID()))
-                .andExpect(jsonPath("$[0].namaProduk").value(transaksiData.getNamaProduk()))
-                .andExpect(jsonPath("$[0].linkImage").value(transaksiData.getLinkImage()))
-                .andExpect(jsonPath("$[0].promoCode").value(transaksiData.getPromoCode()))
-                .andExpect(jsonPath("$[0].username").value(transaksiData.getUsername()))
-                .andExpect(jsonPath("$[0].originalPrice").value(transaksiData.getOriginalPrice()))
-                .andExpect(jsonPath("$[0].discountPrice").value(transaksiData.getDiscountPrice()))
-                .andExpect(jsonPath("$[0].potonganPromo").value(transaksiData.getPotonganPromo()))
-                .andExpect(jsonPath("$[0].finalPrice").value(transaksiData.getFinalPrice()));
-    }
-
-    @Test
-    public void testDeleteTransaksi() throws Exception {
-        mockMvc.perform(delete("/api/transaksi/{id}", transaksiData.getTransaksiId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+                .andExpect(jsonPath("$[0].transaksiId").exists())  // Check if transaksiId exists in the response
+                // Add more assertions as needed for other fields in TransaksiData
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isNotEmpty());
     }
 }

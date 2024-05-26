@@ -27,6 +27,7 @@ public class TransaksiServiceImpl implements TransaksiService {
 
     public List<TransaksiData> findAll() {
         List<Transaksi> transaksiList = transaksiRepository.findAll();
+        System.out.println(transaksiList.size());
         return transaksiList.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
