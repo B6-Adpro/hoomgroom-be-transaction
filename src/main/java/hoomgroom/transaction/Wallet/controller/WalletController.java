@@ -107,6 +107,21 @@ public class WalletController {
         }
     }
 
+    @PostMapping("/pay")
+    public CompletableFuture<ResponseEntity<String>> pay(@NonNull HttpServletRequest request, @RequestBody PaymentRequest paymentRequest) {
+        final String authHeader = request.getHeader(JWT_HEADER);
+        if (authHeader == null) {
+            return CompletableFuture.completedFuture(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized"));
+        }
+        String jwtToken = authHeader.substring(JWT_TOKEN_PREFIX.length());
+        User userDetails = jwtService.extractUser(jwtToken);
+        UUID uid = userDetails.getId();
+
+        return walletService.pay(uid, paymentRequest.getAmount())
+                .thenApply(result -> ResponseEntity.ok(result))
+                .exceptionally(ex -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the payment."));
+    }
+
     // Inner class to represent the request body for top-up request
     public static class TopUpRequest {
         private String walletId;
@@ -154,6 +169,19 @@ public class WalletController {
 
         public void setStrategy(String s) {
             this.strategy=s;
+        }
+    }
+
+    public static class PaymentRequest {
+        private double amount;
+
+        // Getter and setter
+        public double getAmount() {
+            return amount;
+        }
+
+        public void setAmount(double amount) {
+            this.amount = amount;
         }
     }
 }
