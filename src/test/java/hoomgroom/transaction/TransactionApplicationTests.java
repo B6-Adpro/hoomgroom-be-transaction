@@ -9,4 +9,5 @@ class TransactionApplicationTests {
 	@Test
 	void contextLoads() {
 	}
+
 }
