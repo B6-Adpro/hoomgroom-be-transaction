@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -129,4 +130,44 @@ public class WalletServiceTest {
 
         assertEquals("TopUp strategy is not set", exception.getMessage());
     }
+
+    @Test
+    void testPay_WithSufficientBalance() {
+        Wallet wallet = new Wallet();
+        wallet.setBalance(100.0);
+        when(walletRepository.findByUserId(any(UUID.class))).thenReturn(wallet);
+
+        CompletableFuture<String> result = walletService.pay(UUID.randomUUID(), 50.0);
+
+        assertEquals("Payment successful", result.join());
+        assertEquals(50.0, wallet.getBalance());
+        verify(walletRepository, times(1)).findByUserId(any(UUID.class));
+        verify(walletRepository, times(1)).save(any(Wallet.class));
+    }
+
+    @Test
+    void testPay_WithInsufficientBalance() {
+        Wallet wallet = new Wallet();
+        wallet.setBalance(30.0); // balance less than payment amount
+        when(walletRepository.findByUserId(any(UUID.class))).thenReturn(wallet);
+
+        CompletableFuture<String> result = walletService.pay(UUID.randomUUID(), 50.0);
+
+        assertEquals("Balance is not enough", result.join());
+        assertEquals(30.0, wallet.getBalance()); // balance should remain unchanged
+        verify(walletRepository, times(1)).findByUserId(any(UUID.class));
+        verify(walletRepository, times(0)).save(any(Wallet.class)); // wallet should not be saved
+    }
+
+    @Test
+    void testPay_WalletNotFound() {
+        when(walletRepository.findByUserId(any(UUID.class))).thenReturn(null);
+
+        CompletableFuture<String> result = walletService.pay(UUID.randomUUID(), 50.0);
+
+        assertEquals("Wallet not found", result.join());
+        verify(walletRepository, times(1)).findByUserId(any(UUID.class));
+        verify(walletRepository, times(0)).save(any(Wallet.class)); // wallet should not be saved
+    }
+
 }
